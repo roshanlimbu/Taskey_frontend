@@ -3,12 +3,15 @@
   style="height: 100vh"
 >
   <div class="card p-4" style="width: 400px">
-    <h2 class="text-center mb-4">Login</h2>
-    <p class="text-center">Sign in with your GitHub account</p>
-    <div class="d-grid">
+    <h2 class="text-center mb-4">Taskey</h2>
+    <p class="text-center">Sign in with your GitHub account to manage your tasks</p>
+    <div class="d-grid mb-3">
       <button class="btn btn-dark" (click)="loginWithGithub()">
         <i class="fab fa-github me-2"></i> Login with GitHub
       </button>
     </div>
+    <p class="text-center text-muted small">
+      <i class="bi bi-cloud-download"></i> Works offline after you sign in!
+    </p>
   </div>
 </div>
