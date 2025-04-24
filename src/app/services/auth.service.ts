@@ -2,14 +2,27 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, map, Observable, of } from 'rxjs';
 import { Router } from '@angular/router';
+import { tap } from 'rxjs/operators';
+
+interface GithubAuthResponse {
+  token: string;
+  user: {
+    id: number;
+    login: string;
+    avatar_url: string;
+    email: string;
+  };
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = 'http://localhost:8000/api/user';
-  private tokenKey = 'github_token';
-  private userKey = 'user_data';
+  // TODO: Create a GitHub OAuth App at https://github.com/settings/developers
+  // and replace this with your actual Client ID
+  private readonly GITHUB_CLIENT_ID = 'YOUR_GITHUB_CLIENT_ID';
+  private readonly REDIRECT_URI = 'http://localhost:4200/auth/callback';
+  private readonly API_URL = 'http://localhost:3000/api';
 
   constructor(private http: HttpClient, private router: Router) {
     // Check for token in URL on callback from GitHub
@@ -28,19 +41,19 @@ export class AuthService {
   }
 
   setToken(token: string) {
-    localStorage.setItem(this.tokenKey, token);
+    localStorage.setItem('token', token);
   }
 
   getToken(): string | null {
-    return localStorage.getItem(this.tokenKey);
+    return localStorage.getItem('token');
   }
 
   saveUserData(userData: any) {
-    localStorage.setItem(this.userKey, JSON.stringify(userData));
+    localStorage.setItem('user', JSON.stringify(userData));
   }
 
   getUserData(): any {
-    const data = localStorage.getItem(this.userKey);
+    const data = localStorage.getItem('user');
     return data ? JSON.parse(data) : null;
   }
 
@@ -55,30 +68,36 @@ export class AuthService {
       return of(true);
     }
 
-    return this.http
-      .get<any>(this.apiUrl, {
-        withCredentials: true,
-      })
-      .pipe(
-        map((response) => {
-          if (response.authenticated === true) {
-            // Save user data for offline use
-            this.saveUserData(response);
-            return true;
-          }
-          return false;
-        }),
-        catchError((error) => of(false)),
-      );
+    return this.http.get<any>(`${this.API_URL}/auth/verify`).pipe(
+      map(response => true),
+      catchError(() => of(false))
+    );
   }
 
-  logout() {
-    localStorage.removeItem(this.tokenKey);
-    localStorage.removeItem(this.userKey);
+  logout(): void {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     this.router.navigate(['/']);
   }
 
-  loginWithGithub() {
-    window.location.href = 'http://localhost:8000/auth/github';
+  loginWithGithub(): Promise<void> {
+    if (this.GITHUB_CLIENT_ID === 'YOUR_GITHUB_CLIENT_ID') {
+      console.error('GitHub OAuth is not configured. Please create a GitHub OAuth App and replace GITHUB_CLIENT_ID with your actual Client ID.');
+      alert('GitHub OAuth is not configured. Please check the console for instructions.');
+      return Promise.reject('GitHub OAuth not configured');
+    }
+    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${this.GITHUB_CLIENT_ID}&redirect_uri=${this.REDIRECT_URI}&scope=user:email`;
+    window.location.href = githubAuthUrl;
+    return Promise.resolve();
+  }
+
+  handleGithubCallback(code: string): Observable<GithubAuthResponse> {
+    return this.http.post<GithubAuthResponse>(`${this.API_URL}/auth/github`, { code }).pipe(
+      tap(response => {
+        // Store the token in localStorage or a secure storage
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
+      })
+    );
   }
 }
