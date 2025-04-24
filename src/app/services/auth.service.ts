@@ -1,8 +1,10 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { catchError, map, Observable, of } from 'rxjs';
-import { Router } from '@angular/router';
-import { tap } from 'rxjs/operators';
+import { catchError, map, Observable, of, throwError } from 'rxjs';
+import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
+import { tap, filter } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+import { BehaviorSubject } from 'rxjs';
 
 interface GithubAuthResponse {
   token: string;
@@ -18,86 +20,166 @@ interface GithubAuthResponse {
   providedIn: 'root',
 })
 export class AuthService {
-  // TODO: Create a GitHub OAuth App at https://github.com/settings/developers
-  // and replace this with your actual Client ID
-  private readonly GITHUB_CLIENT_ID = 'YOUR_GITHUB_CLIENT_ID';
-  private readonly REDIRECT_URI = 'http://localhost:4200/auth/callback';
-  private readonly API_URL = 'http://localhost:3000/api';
+  private readonly GITHUB_CLIENT_ID = environment.githubClientId;
+  private readonly REDIRECT_URI = environment.redirectUri;
+  private readonly API_URL = environment.apiUrl;
+  private isAuthenticatedSubject = new BehaviorSubject<boolean>(false);
+  private userSubject = new BehaviorSubject<any>(null);
+  private isHandlingCallback = false;
 
-  constructor(private http: HttpClient, private router: Router) {
-    // Check for token in URL on callback from GitHub
-    this.checkTokenInURL();
+  constructor(
+    private http: HttpClient,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
+    this.initializeAuth();
   }
 
-  private checkTokenInURL() {
+  private getAuthHeaders(): HttpHeaders {
+    const token = localStorage.getItem('token');
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    });
+  }
+
+  initializeAuth(): void {
+    // Check if we're on the callback URL
+    if (window.location.href.includes('code=') && !this.isHandlingCallback) {
+      this.isHandlingCallback = true;
+      this.handleGithubCallback();
+    } else {
+      // Check if user is already authenticated
+      const token = localStorage.getItem('token');
+      if (token) {
+        this.checkAuthStatus().subscribe();
+      }
+    }
+
+    // Listen for route changes
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe(() => {
+        if (
+          window.location.href.includes('code=') &&
+          !this.isHandlingCallback
+        ) {
+          this.isHandlingCallback = true;
+          this.handleGithubCallback();
+        }
+      });
+  }
+
+  private handleGithubCallback(): void {
     const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-    if (token) {
-      this.setToken(token);
-      // Clear the token from the URL to avoid security issues
-      window.history.replaceState({}, document.title, window.location.pathname);
-      this.router.navigate(['/dashboard']);
+    const code = urlParams.get('code');
+    const state = urlParams.get('state');
+
+    if (code && state) {
+      this.http
+        .get(`${this.API_URL}/auth/github/callback`, {
+          params: { code, state },
+          withCredentials: true,
+        })
+        .pipe(
+          tap((response: any) => {
+            this.handleAuthSuccess(response);
+            // Clear URL parameters
+            this.router.navigate(['/'], {
+              replaceUrl: true,
+            });
+          }),
+          catchError((error) => {
+            console.error('GitHub callback error:', error);
+            this.isHandlingCallback = false;
+            this.handleAuthError(error);
+            return throwError(() => error);
+          })
+        )
+        .subscribe();
     }
   }
 
-  setToken(token: string) {
-    localStorage.setItem('token', token);
+  private handleAuthSuccess(response: any): void {
+    this.isAuthenticatedSubject.next(true);
+    this.userSubject.next(response.user);
+    localStorage.setItem('token', response.token);
+    this.isHandlingCallback = false;
   }
 
-  getToken(): string | null {
-    return localStorage.getItem('token');
-  }
+  private handleAuthError(error: any): void {
+    this.isAuthenticatedSubject.next(false);
+    this.userSubject.next(null);
+    localStorage.removeItem('token');
 
-  saveUserData(userData: any) {
-    localStorage.setItem('user', JSON.stringify(userData));
-  }
-
-  getUserData(): any {
-    const data = localStorage.getItem('user');
-    return data ? JSON.parse(data) : null;
-  }
-
-  isAuthenticated(): Observable<boolean> {
-    const token = this.getToken();
-    if (!token) {
-      return of(false);
+    let errorMessage = 'Authentication failed';
+    if (error.error?.message) {
+      errorMessage = error.error.message;
+    } else if (error.error?.error) {
+      errorMessage = error.error.error;
     }
 
-    // If offline and we have user data cached, consider authenticated
-    if (!navigator.onLine && this.getUserData()) {
-      return of(true);
-    }
+    // Navigate to error page with message
+    this.router.navigate(['/error'], {
+      queryParams: { message: errorMessage },
+    });
+  }
 
-    return this.http.get<any>(`${this.API_URL}/auth/verify`).pipe(
-      map(response => true),
-      catchError(() => of(false))
-    );
+  loginWithGithub(): void {
+    this.http
+      .get(`${this.API_URL}/auth/github/authorize`, { withCredentials: true })
+      .pipe(
+        catchError((error) => {
+          console.error('GitHub redirect error:', error);
+          this.handleAuthError(error);
+          return throwError(() => error);
+        })
+      )
+      .subscribe((response: any) => {
+        if (response.url) {
+          window.location.href = response.url;
+        }
+      });
   }
 
   logout(): void {
     localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    this.router.navigate(['/']);
+    this.isAuthenticatedSubject.next(false);
+    this.userSubject.next(null);
+    this.router.navigate(['/login']);
   }
 
-  loginWithGithub(): Promise<void> {
-    if (this.GITHUB_CLIENT_ID === 'YOUR_GITHUB_CLIENT_ID') {
-      console.error('GitHub OAuth is not configured. Please create a GitHub OAuth App and replace GITHUB_CLIENT_ID with your actual Client ID.');
-      alert('GitHub OAuth is not configured. Please check the console for instructions.');
-      return Promise.reject('GitHub OAuth not configured');
-    }
-    const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${this.GITHUB_CLIENT_ID}&redirect_uri=${this.REDIRECT_URI}&scope=user:email`;
-    window.location.href = githubAuthUrl;
-    return Promise.resolve();
-  }
-
-  handleGithubCallback(code: string): Observable<GithubAuthResponse> {
-    return this.http.post<GithubAuthResponse>(`${this.API_URL}/auth/github`, { code }).pipe(
-      tap(response => {
-        // Store the token in localStorage or a secure storage
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
+  checkAuthStatus(): Observable<any> {
+    return this.http
+      .get(`${this.API_URL}/user`, {
+        headers: this.getAuthHeaders(),
+        withCredentials: true,
       })
-    );
+      .pipe(
+        tap((user) => {
+          this.isAuthenticatedSubject.next(true);
+          this.userSubject.next(user);
+        }),
+        catchError((error) => {
+          this.isAuthenticatedSubject.next(false);
+          this.userSubject.next(null);
+          localStorage.removeItem('token');
+          return throwError(() => error);
+        })
+      );
+  }
+
+  isAuthenticated(): Observable<boolean> {
+    return this.isAuthenticatedSubject.asObservable();
+  }
+
+  getUser(): Observable<any> {
+    return this.userSubject.asObservable();
+  }
+
+  setToken(token: string): void {
+    localStorage.setItem('token', token);
+    this.isAuthenticatedSubject.next(true);
   }
 }
