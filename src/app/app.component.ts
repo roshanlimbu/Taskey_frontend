@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
 import { AuthService } from './services/auth.service';
@@ -11,8 +11,18 @@ import { AuthService } from './services/auth.service';
   standalone: true,
   styleUrl: './app.component.scss',
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   constructor(private authService: AuthService) {}
+
+  ngOnInit() {
+    this.authService.initializeAuth();
+    this.authService.checkAuthStatus().subscribe({
+      error: (error) => {
+        console.error('Auth check failed:', error);
+        // Continue showing the app even if auth check fails
+      },
+    });
+  }
 
   loginWithGitHub() {
     this.authService.loginWithGithub();
