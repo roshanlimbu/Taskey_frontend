@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterOutlet } from '@angular/router';
+import { AuthService } from './services/auth.service';
+
 @Component({
   selector: 'app-root',
   imports: [CommonModule, FormsModule, RouterOutlet],
@@ -10,9 +12,9 @@ import { RouterOutlet } from '@angular/router';
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  constructor() {}
+  constructor(private authService: AuthService) {}
 
   loginWithGitHub() {
-    window.location.href = 'http://localhost:8000/auth/github';
+    this.authService.loginWithGithub();
   }
 }
