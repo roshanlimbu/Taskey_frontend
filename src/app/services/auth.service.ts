@@ -217,4 +217,16 @@ export class AuthService {
     this.isAuthenticatedSubject.next(true);
     this.authStatusCheck = null;
   }
+
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
+
+  getPrivateKey(): string {
+    return environment.privateKey;
+  }
+
+  getAppId(): string {
+    return environment.appId;
+  }
 }
