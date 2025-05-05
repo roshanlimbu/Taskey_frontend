@@ -1,7 +1,720 @@
-<div class="container mt-5">
-  <h1 class="text-center">Welcome to Your Dashboard</h1>
-  <p class="text-center">You are successfully logged in via GitHub!</p>
-  <div class="text-center">
-    <button class="btn btn-danger" (click)="logout()">Logout</button>
+<div id="webcrumbs">
+  <div
+    class="w-full max-w-full bg-neutral-50 p-2 sm:p-3 md:p-4 font-sans mx-auto"
+  >
+    <div class="flex items-center justify-between mb-8">
+      <!-- Left: Heading -->
+      <h1 class="text-3xl font-bold font-title text-neutral-800">
+        Taskey Dashboard
+      </h1>
+
+      <!-- Right: Search, Notification, Profile -->
+      <div class="flex items-center gap-4">
+        <!-- Search Bar -->
+        <div class="relative">
+          <span
+            class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-neutral-400"
+            >search</span
+          >
+          <input
+            type="text"
+            placeholder="Search projects, members..."
+            class="pl-10 pr-4 py-2 rounded-full border border-neutral-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-300 w-64"
+          />
+        </div>
+        <!-- Notification Icon -->
+        <div class="relative">
+          <span
+            class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full transform translate-x-1 -translate-y-1"
+          ></span>
+          <span
+            class="material-symbols-outlined p-2 bg-white rounded-full border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors duration-300"
+            >notifications</span
+          >
+        </div>
+        <!-- User Profile -->
+        <div class="relative group">
+          <img
+            src="https://images.unsplash.com/photo-1511367461989-f85a21fda167?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxfHxwcm9maWxlfGVufDB8fHx8MTc0NjM5OTk0NHww&ixlib=rb-4.0.3&q=80&w=1080"
+            alt="User profile"
+            class="w-10 h-10 rounded-full border-2 border-primary-500 cursor-pointer hover:scale-105 transition-transform duration-300"
+          />
+          <div
+            class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-10 hidden group-hover:block transition-all duration-300"
+          >
+            <a href="#" class="block px-4 py-2 hover:bg-neutral-100"
+              >My Profile</a
+            >
+            <a href="#" class="block px-4 py-2 hover:bg-neutral-100"
+              >Settings</a
+            >
+            <a
+              href="#"
+              class="block px-4 py-2 hover:bg-neutral-100 text-red-500"
+              >Logout</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid lg:grid-cols-4 gap-6 w-full">
+      <div class="lg:col-span-3 flex flex-col gap-6">
+        <!-- small card section  -->
+        <div class="flex flex-row flex-wrap gap-6">
+          <div
+            class="flex-1 min-w-[250px] max-w-full sm:max-w-[calc(50%-1.5rem)] lg:max-w-[calc(33.333%-1.5rem)] bg-white p-6 rounded-2xl shadow border border-neutral-100"
+          >
+            <div class="flex items-center justify-between">
+              <span class="text-neutral-500 font-semibold"
+                >Active Projects</span
+              >
+              <span class="material-symbols-outlined text-primary-500"
+                >equalizer</span
+              >
+            </div>
+            <div class="text-3xl font-bold text-neutral-900">12</div>
+            <div class="flex items-center text-green-600 text-sm">
+              <span class="material-symbols-outlined text-base mr-1"
+                >arrow_upward</span
+              >
+              4% from last week
+            </div>
+          </div>
+
+          <div
+            class="flex-1 min-w-[250px] max-w-full sm:max-w-[calc(50%-1.5rem)] lg:max-w-[calc(33.333%-1.5rem)] bg-white p-6 rounded-2xl shadow border border-neutral-100"
+          >
+            <div class="flex items-center justify-between">
+              <span class="text-neutral-500 font-semibold">Team Members</span>
+              <span class="material-symbols-outlined text-primary-500"
+                >group</span
+              >
+            </div>
+            <div class="text-3xl font-bold text-neutral-900">24</div>
+            <div class="flex items-center text-green-600 text-sm">
+              <span class="material-symbols-outlined text-base mr-1"
+                >arrow_upward</span
+              >
+              2 new this month
+            </div>
+          </div>
+
+          <div
+            class="flex-1 min-w-[250px] max-w-full sm:max-w-[calc(50%-1.5rem)] lg:max-w-[calc(33.333%-1.5rem)] bg-white p-6 rounded-2xl shadow border border-neutral-100"
+          >
+            <div class="flex items-center justify-between">
+              <span class="text-neutral-500 font-semibold"
+                >Tasks Completed</span
+              >
+              <span class="material-symbols-outlined text-primary-500"
+                >task_alt</span
+              >
+            </div>
+            <div class="text-3xl font-bold text-neutral-900">187</div>
+            <div class="flex items-center text-red-500 text-sm">
+              <span class="material-symbols-outlined text-base mr-1"
+                >arrow_downward</span
+              >
+              2% from last week
+            </div>
+          </div>
+        </div>
+        <div
+          class="bg-white p-3 sm:p-4 md:p-5 rounded-xl shadow-sm border border-neutral-100"
+        >
+          <div
+            class="flex flex-col sm:flex-row justify-between items-center mb-3 sm:mb-4 gap-2 sm:gap-0"
+          >
+            <h2 class="text-xl font-bold text-neutral-800">Running Projects</h2>
+            <button
+              class="flex items-center gap-2 px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors duration-300"
+            >
+              <span class="material-symbols-outlined text-sm">add</span>
+              <span>New Project</span>
+            </button>
+          </div>
+          <div class="space-y-4">
+            <div
+              class="p-4 border border-neutral-100 rounded-lg hover:shadow-md transition-all duration-300 cursor-pointer"
+            >
+              <div class="flex justify-between items-center mb-3">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"
+                  >
+                    <span class="material-symbols-outlined text-blue-600"
+                      >memory</span
+                    >
+                  </div>
+                  <div>
+                    <h3 class="font-semibold">AI Integration Platform</h3>
+                    <p class="text-sm text-neutral-500">
+                      Frontend Team • 8 members
+                    </p>
+                  </div>
+                </div>
+                <span
+                  class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium"
+                  >On Track</span
+                >
+              </div>
+              <div class="mb-2">
+                <div class="flex justify-between mb-1 text-sm">
+                  <span>Progress</span> <span class="font-medium">75%</span>
+                </div>
+                <div class="w-full bg-neutral-100 rounded-full h-2">
+                  <div
+                    class="bg-primary-500 h-2 rounded-full"
+                    style="width: 75%"
+                  ></div>
+                </div>
+              </div>
+              <div class="flex justify-between text-sm text-neutral-500">
+                <span>Due date: Nov 15, 2023</span>
+                <div class="flex -space-x-2">
+                  <img
+                    src="https://images.unsplash.com/photo-1562788869-4ed32648eb72?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxfHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
+                    class="w-6 h-6 rounded-full border border-white"
+                    keywords="team member, avatar"
+                  />
+                  <img
+                    src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwyfHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
+                    class="w-6 h-6 rounded-full border border-white"
+                    keywords="team member, avatar"
+                  />
+                  <img
+                    src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwzfHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
+                    class="w-6 h-6 rounded-full border border-white"
+                    keywords="team member, avatar"
+                  />
+                  <div
+                    class="w-6 h-6 rounded-full bg-neutral-200 flex items-center justify-center text-xs font-medium border border-white"
+                  >
+                    +5
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="p-4 border border-neutral-100 rounded-lg hover:shadow-md transition-all duration-300 cursor-pointer"
+            >
+              <div class="flex justify-between items-center mb-3">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center"
+                  >
+                    <span class="material-symbols-outlined text-purple-600"
+                      >smartphone</span
+                    >
+                  </div>
+                  <div>
+                    <h3 class="font-semibold">Mobile App Redesign</h3>
+                    <p class="text-sm text-neutral-500">
+                      UI/UX Team • 5 members
+                    </p>
+                  </div>
+                </div>
+                <span
+                  class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium"
+                  >At Risk</span
+                >
+              </div>
+              <div class="mb-2">
+                <div class="flex justify-between mb-1 text-sm">
+                  <span>Progress</span> <span class="font-medium">45%</span>
+                </div>
+                <div class="w-full bg-neutral-100 rounded-full h-2">
+                  <div
+                    class="bg-yellow-500 h-2 rounded-full"
+                    style="width: 45%"
+                  ></div>
+                </div>
+              </div>
+              <div class="flex justify-between text-sm text-neutral-500">
+                <span>Due date: Oct 30, 2023</span>
+                <div class="flex -space-x-2">
+                  <img
+                    src="https://images.unsplash.com/photo-1607746882042-944635dfe10e?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHw0fHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
+                    class="w-6 h-6 rounded-full border border-white"
+                    keywords="team member, avatar"
+                  />
+                  <img
+                    src="https://images.unsplash.com/photo-1538688423619-a81d3f23454b?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHw1fHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
+                    class="w-6 h-6 rounded-full border border-white"
+                    keywords="team member, avatar"
+                  />
+                  <img
+                    src="https://images.unsplash.com/photo-1573497491765-dccce02b29df?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHw2fHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
+                    class="w-6 h-6 rounded-full border border-white"
+                    keywords="team member, avatar"
+                  />
+                  <div
+                    class="w-6 h-6 rounded-full bg-neutral-200 flex items-center justify-center text-xs font-medium border border-white"
+                  >
+                    +2
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div
+              class="p-4 border border-neutral-100 rounded-lg hover:shadow-md transition-all duration-300 cursor-pointer"
+            >
+              <div class="flex justify-between items-center mb-3">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center"
+                  >
+                    <span class="material-symbols-outlined text-cyan-600"
+                      >cloud</span
+                    >
+                  </div>
+                  <div>
+                    <h3 class="font-semibold">
+                      Cloud Infrastructure Migration
+                    </h3>
+                    <p class="text-sm text-neutral-500">
+                      DevOps Team • 6 members
+                    </p>
+                  </div>
+                </div>
+                <span
+                  class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium"
+                  >On Track</span
+                >
+              </div>
+              <div class="mb-2">
+                <div class="flex justify-between mb-1 text-sm">
+                  <span>Progress</span> <span class="font-medium">60%</span>
+                </div>
+                <div class="w-full bg-neutral-100 rounded-full h-2">
+                  <div
+                    class="bg-primary-500 h-2 rounded-full"
+                    style="width: 60%"
+                  ></div>
+                </div>
+              </div>
+              <div class="flex justify-between text-sm text-neutral-500">
+                <span>Due date: Dec 5, 2023</span>
+                <div class="flex -space-x-2">
+                  <img
+                    src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHw3fHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
+                    class="w-6 h-6 rounded-full border border-white"
+                    keywords="team member, avatar"
+                  />
+                  <img
+                    src="https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHw4fHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
+                    class="w-6 h-6 rounded-full border border-white"
+                    keywords="team member, avatar"
+                  />
+                  <img
+                    src="https://images.unsplash.com/photo-1521737852567-6949f3f9f2b5?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHw5fHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
+                    class="w-6 h-6 rounded-full border border-white"
+                    keywords="team member, avatar"
+                  />
+                  <div
+                    class="w-6 h-6 rounded-full bg-neutral-200 flex items-center justify-center text-xs font-medium border border-white"
+                  >
+                    +3
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4 text-center">
+            <button
+              class="text-primary-600 font-medium hover:text-primary-700 transition-colors duration-300 flex items-center gap-1 mx-auto"
+            >
+              <span>View all projects</span>
+              <span class="material-symbols-outlined text-sm"
+                >arrow_forward</span
+              >
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- right side -->
+      <div class="flex flex-col gap-6">
+        <div
+          class="bg-white p-5 rounded-xl shadow-sm border border-neutral-100"
+        >
+          <div class="flex justify-between items-center mb-3 sm:mb-4">
+            <h2 class="text-lg font-bold text-neutral-800">Team Members</h2>
+            <button
+              class="text-primary-500 hover:text-primary-600 transition-colors duration-300"
+            >
+              <span class="material-symbols-outlined">add</span>
+            </button>
+          </div>
+          <div class="space-y-4">
+            <div
+              class="flex items-center justify-between hover:bg-neutral-50 p-2 rounded-lg transition-colors duration-300 cursor-pointer"
+            >
+              <div class="flex items-center gap-3">
+                <img
+                  src="https://images.unsplash.com/photo-1568658173325-c7b8a11d5666?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxMHx8dGVhbSUyMG1lbWJlcnxlbnwwfHx8fDE3NDY0MTQxNzh8MA&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
+                  alt="Sarah Johnson"
+                  class="w-10 h-10 rounded-full"
+                  keywords="team member, avatar"
+                />
+                <div>
+                  <h3 class="font-medium">Sarah Johnson</h3>
+                  <p class="text-xs text-neutral-500">Lead Designer</p>
+                </div>
+              </div>
+              <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+            </div>
+            <div
+              class="flex items-center justify-between hover:bg-neutral-50 p-2 rounded-lg transition-colors duration-300 cursor-pointer"
+            >
+              <div class="flex items-center gap-3">
+                <img
+                  src="https://images.unsplash.com/photo-1502444330042-d1a1ddf9bb5b?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxMXx8dGVhbSUyMG1lbWJlcnxlbnwwfHx8fDE3NDY0MTQxNzh8MA&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
+                  alt="Michael Chen"
+                  class="w-10 h-10 rounded-full"
+                  keywords="team member, avatar"
+                />
+                <div>
+                  <h3 class="font-medium">Michael Chen</h3>
+                  <p class="text-xs text-neutral-500">Frontend Developer</p>
+                </div>
+              </div>
+              <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+            </div>
+            <div
+              class="flex items-center justify-between hover:bg-neutral-50 p-2 rounded-lg transition-colors duration-300 cursor-pointer"
+            >
+              <div class="flex items-center gap-3">
+                <img
+                  src="https://images.unsplash.com/photo-1543269865-cbf427effbad?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxMnx8dGVhbSUyMG1lbWJlcnxlbnwwfHx8fDE3NDY0MTQxNzh8MA&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
+                  alt="Elena Rodriguez"
+                  class="w-10 h-10 rounded-full"
+                  keywords="team member, avatar"
+                />
+                <div>
+                  <h3 class="font-medium">Elena Rodriguez</h3>
+                  <p class="text-xs text-neutral-500">Product Manager</p>
+                </div>
+              </div>
+              <span class="w-3 h-3 bg-neutral-300 rounded-full"></span>
+            </div>
+            <div
+              class="flex items-center justify-between hover:bg-neutral-50 p-2 rounded-lg transition-colors duration-300 cursor-pointer"
+            >
+              <div class="flex items-center gap-3">
+                <img
+                  src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxM3x8dGVhbSUyMG1lbWJlcnxlbnwwfHx8fDE3NDY0MTQxNzh8MA&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
+                  alt="Alex Thompson"
+                  class="w-10 h-10 rounded-full"
+                  keywords="team member, avatar"
+                />
+                <div>
+                  <h3 class="font-medium">Alex Thompson</h3>
+                  <p class="text-xs text-neutral-500">Backend Developer</p>
+                </div>
+              </div>
+              <span class="w-3 h-3 bg-green-500 rounded-full"></span>
+            </div>
+            <div
+              class="flex items-center justify-between hover:bg-neutral-50 p-2 rounded-lg transition-colors duration-300 cursor-pointer"
+            >
+              <div class="flex items-center gap-3">
+                <img
+                  src="https://images.unsplash.com/photo-1527525443983-6e60c75fff46?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxNHx8dGVhbSUyMG1lbWJlcnxlbnwwfHx8fDE3NDY0MTQxNzh8MA&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
+                  alt="Priya Patel"
+                  class="w-10 h-10 rounded-full"
+                  keywords="team member, avatar"
+                />
+                <div>
+                  <h3 class="font-medium">Priya Patel</h3>
+                  <p class="text-xs text-neutral-500">QA Engineer</p>
+                </div>
+              </div>
+              <span class="w-3 h-3 bg-neutral-300 rounded-full"></span>
+            </div>
+          </div>
+          <div class="mt-4 text-center">
+            <button
+              class="text-primary-600 font-medium hover:text-primary-700 transition-colors duration-300 flex items-center gap-1 mx-auto"
+            >
+              <span>View all members</span>
+              <span class="material-symbols-outlined text-sm"
+                >arrow_forward</span
+              >
+            </button>
+          </div>
+        </div>
+        <div
+          class="bg-white p-5 rounded-xl shadow-sm border border-neutral-100"
+        >
+          <h2 class="text-lg font-bold text-neutral-800 mb-4">
+            Upcoming Deadlines
+          </h2>
+          <div class="space-y-3">
+            <div
+              class="p-3 border-l-4 border-red-500 rounded-r-lg bg-neutral-50 hover:bg-red-50 transition-colors duration-300 cursor-pointer"
+            >
+              <h3 class="font-medium">Mobile App Redesign</h3>
+              <p class="text-xs text-neutral-500">Due in 2 days</p>
+            </div>
+            <div
+              class="p-3 border-l-4 border-yellow-500 rounded-r-lg bg-neutral-50 hover:bg-yellow-50 transition-colors duration-300 cursor-pointer"
+            >
+              <h3 class="font-medium">User Testing Session</h3>
+              <p class="text-xs text-neutral-500">Due in 5 days</p>
+            </div>
+            <div
+              class="p-3 border-l-4 border-green-500 rounded-r-lg bg-neutral-50 hover:bg-green-50 transition-colors duration-300 cursor-pointer"
+            >
+              <h3 class="font-medium">API Documentation</h3>
+              <p class="text-xs text-neutral-500">Due in 2 weeks</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      class="grid md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-5 lg:gap-6 mt-4 sm:mt-5 md:mt-6"
+    >
+      <div
+        class="bg-white p-5 rounded-xl shadow-sm border border-neutral-100 lg:col-span-2"
+      >
+        <div
+          class="flex flex-col sm:flex-row justify-between items-center mb-3 sm:mb-4 gap-2 sm:gap-0"
+        >
+          <h2 class="text-lg font-bold text-neutral-800">Project Activity</h2>
+          <div
+            class="flex gap-2 w-full overflow-x-auto pb-2 sm:pb-0 sm:w-auto sm:overflow-visible"
+          >
+            <button
+              class="px-3 py-1.5 text-sm bg-primary-500 text-white rounded hover:bg-primary-600 transition-colors duration-300"
+            >
+              All
+            </button>
+            <button
+              class="px-3 py-1.5 text-sm bg-white border border-neutral-200 rounded hover:bg-neutral-50 transition-colors duration-300"
+            >
+              Issues
+            </button>
+            <button
+              class="px-3 py-1.5 text-sm bg-white border border-neutral-200 rounded hover:bg-neutral-50 transition-colors duration-300"
+            >
+              Comments
+            </button>
+          </div>
+        </div>
+        <div class="space-y-4">
+          <div class="flex gap-4 py-3 border-b border-neutral-100">
+            <div class="flex-shrink-0">
+              <img
+                src="https://images.unsplash.com/photo-1521898284481-a5ec348cb555?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxNXx8dGVhbSUyMG1lbWJlcnxlbnwwfHx8fDE3NDY0MTQxNzh8MA&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
+                alt="Sarah Johnson"
+                class="w-10 h-10 rounded-full"
+                keywords="team member, avatar"
+              />
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-medium">Sarah Johnson</span>
+                <span class="text-neutral-500 text-sm"
+                  >updated task status</span
+                >
+                <span
+                  class="font-medium text-primary-600 hover:underline cursor-pointer"
+                  >Homepage Redesign</span
+                >
+              </div>
+              <p class="text-sm text-neutral-600 mt-1">
+                Changed status from &quot;In Progress&quot; to &quot;Ready for
+                Review&quot;
+              </p>
+              <div
+                class="flex items-center gap-4 mt-2 text-xs text-neutral-500"
+              >
+                <span>Today at 10:23 AM</span>
+                <button
+                  class="text-neutral-600 hover:text-primary-600 transition-colors duration-300 flex items-center gap-1"
+                >
+                  <span class="material-symbols-outlined text-sm">comment</span>
+                  <span>Reply</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-4 py-3 border-b border-neutral-100">
+            <div class="flex-shrink-0">
+              <img
+                src="https://images.unsplash.com/photo-1562788869-4ed32648eb72?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxfHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
+                alt="Michael Chen"
+                class="w-10 h-10 rounded-full"
+                keywords="team member, avatar"
+              />
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-medium">Michael Chen</span>
+                <span class="text-neutral-500 text-sm">created a new task</span>
+                <span
+                  class="font-medium text-primary-600 hover:underline cursor-pointer"
+                  >Fix Navbar Responsiveness</span
+                >
+              </div>
+              <p class="text-sm text-neutral-600 mt-1">
+                Added a new task to the &quot;Mobile App Redesign&quot; project
+              </p>
+              <div
+                class="flex items-center gap-4 mt-2 text-xs text-neutral-500"
+              >
+                <span>Yesterday at 3:45 PM</span>
+                <button
+                  class="text-neutral-600 hover:text-primary-600 transition-colors duration-300 flex items-center gap-1"
+                >
+                  <span class="material-symbols-outlined text-sm">comment</span>
+                  <span>Reply</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-4 py-3 border-b border-neutral-100">
+            <div class="flex-shrink-0">
+              <img
+                src="https://images.unsplash.com/photo-1562788869-4ed32648eb72?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxfHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
+                alt="Elena Rodriguez"
+                class="w-10 h-10 rounded-full"
+                keywords="team member, avatar"
+              />
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-medium">Elena Rodriguez</span>
+                <span class="text-neutral-500 text-sm">commented on</span>
+                <span
+                  class="font-medium text-primary-600 hover:underline cursor-pointer"
+                  >API Integration Issue</span
+                >
+              </div>
+              <p class="text-sm text-neutral-600 mt-1">
+                Let&#x27;s schedule a call with the backend team to discuss this
+                issue further.
+              </p>
+              <div
+                class="flex items-center gap-4 mt-2 text-xs text-neutral-500"
+              >
+                <span>Oct 18, 2023 at 9:12 AM</span>
+                <button
+                  class="text-neutral-600 hover:text-primary-600 transition-colors duration-300 flex items-center gap-1"
+                >
+                  <span class="material-symbols-outlined text-sm">comment</span>
+                  <span>Reply</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 text-center">
+          <button
+            class="text-primary-600 font-medium hover:text-primary-700 transition-colors duration-300 flex items-center gap-1 mx-auto"
+          >
+            <span>View all activity</span>
+            <span class="material-symbols-outlined text-sm">arrow_forward</span>
+          </button>
+        </div>
+      </div>
+      <div
+        class="bg-white p-3 sm:p-4 md:p-5 rounded-xl shadow-sm border border-neutral-100"
+      >
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-bold text-neutral-800">Project Status</h2>
+          <button
+            class="text-neutral-500 hover:text-neutral-700 transition-colors duration-300"
+          >
+            <span class="material-symbols-outlined">more_vert</span>
+          </button>
+        </div>
+        <div class="space-y-6">
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="font-medium">Frontend Development</span>
+              <span class="text-sm font-medium">72%</span>
+            </div>
+            <div class="w-full bg-neutral-100 rounded-full h-2.5">
+              <div
+                class="bg-primary-500 h-2.5 rounded-full"
+                style="width: 72%"
+              ></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="font-medium">Backend Development</span>
+              <span class="text-sm font-medium">45%</span>
+            </div>
+            <div class="w-full bg-neutral-100 rounded-full h-2.5">
+              <div
+                class="bg-primary-500 h-2.5 rounded-full"
+                style="width: 45%"
+              ></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="font-medium">Design System</span>
+              <span class="text-sm font-medium">90%</span>
+            </div>
+            <div class="w-full bg-neutral-100 rounded-full h-2.5">
+              <div
+                class="bg-primary-500 h-2.5 rounded-full"
+                style="width: 90%"
+              ></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="font-medium">User Testing</span>
+              <span class="text-sm font-medium">30%</span>
+            </div>
+            <div class="w-full bg-neutral-100 rounded-full h-2.5">
+              <div
+                class="bg-primary-500 h-2.5 rounded-full"
+                style="width: 30%"
+              ></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between items-center mb-2">
+              <span class="font-medium">Documentation</span>
+              <span class="text-sm font-medium">58%</span>
+            </div>
+            <div class="w-full bg-neutral-100 rounded-full h-2.5">
+              <div
+                class="bg-primary-500 h-2.5 rounded-full"
+                style="width: 58%"
+              ></div>
+            </div>
+          </div>
+        </div>
+        <div class="mt-6 pt-4 border-t border-neutral-100">
+          <h3 class="font-medium mb-3">Overall Completion</h3>
+          <div class="flex items-end gap-2">
+            <div class="text-3xl font-bold text-primary-600">59%</div>
+            <div class="text-sm text-green-600 flex items-center">
+              <span class="material-symbols-outlined text-sm mr-1"
+                >arrow_upward</span
+              >
+              <span>4% this week</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
+
+<!-- <div class="container mt-5"> -->
+<!--   <h1 class="text-center">Welcome to Your Dashboard</h1> -->
+<!--   <p class="text-center">You are successfully logged in via GitHub!</p> -->
+<div class="text-center">
+  <button class="btn btn-danger" (click)="logout()">Logout</button>
+</div>
+<!-- </div> -->
