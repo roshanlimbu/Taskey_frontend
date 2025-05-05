@@ -30,14 +30,19 @@ export class AuthCallbackComponent implements OnInit {
 
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
-      if (params['code']) {
+      if (params['code'] && params['state']) {
         this.authService
           .handleGithubCallback(params['code'], params['state'])
           .subscribe({
-            next: () => {
-              this.router.navigate(['/dashboard']);
+            next: (response) => {
+              // Check if user is super admin and navigate accordingly
+              if (response.user && response.user.is_super_admin === 1) {
+                this.router.navigate(['/dashboard']);
+              } else {
+                this.router.navigate(['/']);
+              }
             },
-            error: (error) => {
+            error: (error: any) => {
               console.error('Authentication failed:', error);
               this.router.navigate(['/login']);
             },
