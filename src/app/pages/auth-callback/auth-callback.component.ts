@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
 
@@ -24,33 +24,35 @@ import { CommonModule } from '@angular/common';
 export class AuthCallbackComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
     private authService: AuthService,
   ) {}
 
   ngOnInit() {
     this.route.queryParams.subscribe((params) => {
+      console.log('Callback query params:', params);
       if (params['code'] && params['state']) {
+        console.log(
+          'Initiating handleGithubCallback with code:',
+          params['code'],
+          'state:',
+          params['state'],
+        );
         this.authService
           .handleGithubCallback(params['code'], params['state'])
           .subscribe({
             next: (response) => {
-              // Check if user is super admin and navigate accordingly
-              if (response.user && response.user.is_super_admin === 1) {
-                this.router.navigate(['/dashboard']);
-              } else {
-                this.router.navigate(['/']);
-              }
+              console.log('handleGithubCallback success:', response);
             },
             error: (error: any) => {
               console.error('Authentication failed:', error);
-              this.router.navigate(['/login']);
             },
           });
       } else {
-        this.router.navigate(['/login']);
+        console.error('Missing code or state in callback params');
+        this.authService.handleAuthError(
+          new Error('Invalid callback parameters'),
+        );
       }
     });
   }
 }
-
