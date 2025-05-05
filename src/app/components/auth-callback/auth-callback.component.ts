@@ -25,34 +25,29 @@ export class AuthCallbackComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit() {
-    // Check URL for errors first
-    if (window.location.href.includes('error=')) {
-      const errorMessage = 'GitHub authentication failed. Please try again.';
-      this.router.navigate(['/error'], {
-        queryParams: { message: errorMessage },
-      });
-      return;
-    }
-
-    // Process token from the redirect
     this.route.queryParams.subscribe((params) => {
       console.log('Callback query params:', params);
 
-      // Standard token handling after backend redirect
-      if (params['token'] && params['user']) {
+      if (params['error']) {
+        console.error('GitHub OAuth error:', params['error']);
+        this.router.navigate(['/error'], {
+          queryParams: {
+            message: `GitHub OAuth error: ${
+              params['error_description'] || params['error']
+            }`,
+          },
+        });
+        return;
+      }
+
+      if (params['token']) {
         try {
-          // Store the token
           this.authService.setToken(params['token']);
-
-          // Parse and store user info if needed
-          const user = JSON.parse(decodeURIComponent(params['user']));
-          console.log('User info:', user);
-
-          // Redirect to dashboard
+          console.log('Token stored:', params['token']);
           this.router.navigate(['/dashboard']);
         } catch (error) {
           console.error('Error processing authentication:', error);
@@ -63,18 +58,8 @@ export class AuthCallbackComponent implements OnInit {
             },
           });
         }
-      } else if (params['error']) {
-        // Handle specific GitHub OAuth error
-        console.error('GitHub OAuth error:', params['error']);
-        this.router.navigate(['/error'], {
-          queryParams: {
-            message: `GitHub OAuth error: ${
-              params['error_description'] || params['error']
-            }`,
-          },
-        });
       } else {
-        console.error('Missing token or user in callback params');
+        console.error('Missing token in callback params');
         this.router.navigate(['/error'], {
           queryParams: {
             message:

@@ -10,17 +10,17 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'login-callback',
+    loadComponent: () =>
+      import('./pages/auth-callback/auth-callback.component').then(
+        (m) => m.AuthCallbackComponent
+      ),
+  },
+  {
     path: 'error',
     loadComponent: () =>
       import('./components/error/error.component').then(
         (m) => m.ErrorComponent
-      ),
-  },
-  {
-    path: 'auth/callback',
-    loadComponent: () =>
-      import('./pages/auth-callback/auth-callback.component').then(
-        (m) => m.AuthCallbackComponent
       ),
   },
   {

@@ -1,7 +1,6 @@
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from './services/auth.service';
-import { of, catchError, switchMap } from 'rxjs';
 
 export const authGuard = () => {
   const router = inject(Router);
@@ -9,17 +8,15 @@ export const authGuard = () => {
 
   const token = localStorage.getItem('token');
   if (token) {
-    // Always check backend if token exists
-    return authService.checkAuthStatus().pipe(
-      switchMap(() => of(true)),
-      catchError(() => {
-        router.navigate(['/login']);
-        return of(false);
-      })
-    );
+    const isLoggedIn = authService.isLoggedIn();
+    if (isLoggedIn) {
+      return true;
+    } else {
+      router.navigate(['/login']);
+      return false;
+    }
   } else {
-    // No token, not authenticated
     router.navigate(['/login']);
-    return of(false);
+    return false;
   }
 };

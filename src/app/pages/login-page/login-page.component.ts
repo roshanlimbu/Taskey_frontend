@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login-page',
@@ -10,10 +11,9 @@ import { CommonModule } from '@angular/common';
   imports: [CommonModule],
 })
 export class LoginPageComponent {
-  constructor(private authService: AuthService) {}
+  constructor(public authService: AuthService) {}
 
-  loginWithGithub(): void {
+  loginWithGithub() {
     this.authService.loginWithGithub();
   }
 }
-
