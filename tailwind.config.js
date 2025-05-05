@@ -1,5 +1,5 @@
 module.exports = {
-  content: ["./src/**/*.{html,js}"],
+  content: ["./src/**/*.{html,js,jsx,ts,tsx}"],
   theme: {
     name: "Custom",
     fontFamily: {
@@ -38,13 +38,13 @@ module.exports = {
         ],
       },
       colors: {
+        customPrimary: "#B9619A !important",
         neutral: {
           50: "#f7f7f7",
           100: "#efecfa",
           200: "#e1dcf5",
           300: "#ccc5e7",
           400: "#b3a4f4",
-          500: "#998bde",
           600: "#7d72c5",
           700: "#665c9f",
           800: "#54506c",
@@ -55,13 +55,6 @@ module.exports = {
           50: "#FDF2F9",
           100: "#FBEBF6",
           200: "#F8D5EC",
-          300: "#E779C1",
-          400: "#D06DAE",
-          500: "#B9619A",
-          600: "#AD5B91",
-          700: "#8B4974",
-          800: "#683657",
-          900: "#512A44",
           DEFAULT: "#E779C1",
         },
       },
@@ -132,4 +125,5 @@ module.exports = {
   },
   plugins: [],
   important: "#webcrumbs",
+  safelist: [{ pattern: /^bg-customPrimary$/ }],
 };
