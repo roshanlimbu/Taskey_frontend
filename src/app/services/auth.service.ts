@@ -48,7 +48,12 @@ export class AuthService {
     // Check if we're on the callback URL
     if (window.location.href.includes('code=') && !this.isHandlingCallback) {
       this.isHandlingCallback = true;
-      this.handleGithubCallback();
+      const urlParams = new URLSearchParams(window.location.search);
+      const code = urlParams.get('code');
+      const state = urlParams.get('state');
+      if (code && state) {
+        this.handleGithubCallback(code, state).subscribe();
+      }
     } else {
       // Check if user is already authenticated
       const token = localStorage.getItem('token');
@@ -66,46 +71,55 @@ export class AuthService {
           !this.isHandlingCallback
         ) {
           this.isHandlingCallback = true;
-          this.handleGithubCallback();
+          const urlParams = new URLSearchParams(window.location.search);
+          const code = urlParams.get('code');
+          const state = urlParams.get('state');
+          if (code && state) {
+            this.handleGithubCallback(code, state).subscribe();
+          }
         }
       });
   }
 
-  private handleGithubCallback(): void {
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    const state = urlParams.get('state');
-
-    if (code && state) {
-      this.http
-        .get(`${this.API_URL}/auth/github/callback`, {
-          params: { code, state },
-          withCredentials: true,
+  handleGithubCallback(code: string, state: string): Observable<any> {
+    return this.http
+      .get(`${this.API_URL}/auth/github/callback`, {
+        params: { code, state },
+        withCredentials: true,
+      })
+      .pipe(
+        tap((response: any) => {
+          this.handleAuthSuccess(response);
+        }),
+        catchError((error) => {
+          console.error('GitHub callback error:', error);
+          this.isHandlingCallback = false;
+          this.handleAuthError(error);
+          return throwError(() => error);
         })
-        .pipe(
-          tap((response: any) => {
-            this.handleAuthSuccess(response);
-            // Clear URL parameters
-            this.router.navigate(['/'], {
-              replaceUrl: true,
-            });
-          }),
-          catchError((error) => {
-            console.error('GitHub callback error:', error);
-            this.isHandlingCallback = false;
-            this.handleAuthError(error);
-            return throwError(() => error);
-          })
-        )
-        .subscribe();
-    }
+      );
   }
 
   private handleAuthSuccess(response: any): void {
-    this.isAuthenticatedSubject.next(true);
-    this.userSubject.next(response.user);
-    localStorage.setItem('token', response.token);
-    this.isHandlingCallback = false;
+    if (response.token) {
+      localStorage.setItem('token', response.token);
+      this.isAuthenticatedSubject.next(true);
+      this.userSubject.next(response.user);
+      this.isHandlingCallback = false;
+
+      // Add a small delay to ensure the guard picks up the new state
+      setTimeout(() => {
+        if (response.user && response.user.is_super_admin === 1) {
+          console.log('User is super admin, redirecting to dashboard');
+          this.router.navigate(['/dashboard']);
+        } else {
+          console.log('User is not super admin, redirecting to home');
+          this.router.navigate(['/']);
+        }
+      }, 500); // 100ms delay
+    } else {
+      this.handleAuthError(new Error('No token received'));
+    }
   }
 
   private handleAuthError(error: any): void {
@@ -151,15 +165,26 @@ export class AuthService {
   }
 
   checkAuthStatus(): Observable<any> {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      this.isAuthenticatedSubject.next(false);
+      this.userSubject.next(null);
+      return throwError(() => new Error('No token found'));
+    }
+
     return this.http
       .get(`${this.API_URL}/user`, {
-        headers: this.getAuthHeaders(),
+        headers: new HttpHeaders({
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        }),
         withCredentials: true,
       })
       .pipe(
-        tap((user) => {
+        tap((response: any) => {
           this.isAuthenticatedSubject.next(true);
-          this.userSubject.next(user);
+          this.userSubject.next(response.user);
         }),
         catchError((error) => {
           this.isAuthenticatedSubject.next(false);
