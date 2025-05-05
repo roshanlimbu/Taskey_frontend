@@ -1,9 +1,6 @@
 import { Component } from '@angular/core';
-import { Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 import { CommonModule } from '@angular/common';
-import { filter } from 'rxjs/operators';
-import { NavigationEnd } from '@angular/router';
 
 @Component({
   selector: 'app-login-page',
@@ -13,17 +10,10 @@ import { NavigationEnd } from '@angular/router';
   imports: [CommonModule],
 })
 export class LoginPageComponent {
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(private authService: AuthService) {}
 
-  async loginWithGithub() {
-    try {
-      await this.authService.loginWithGithub();
-    } catch (error) {
-      console.error('Login failed:', error);
-    }
+  loginWithGithub(): void {
+    this.authService.loginWithGithub();
   }
+}
 
-  ngOnInit() {
-    this.authService.initializeAuth();
-  }
-} 
