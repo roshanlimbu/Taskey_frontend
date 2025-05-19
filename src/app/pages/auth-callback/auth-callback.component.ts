@@ -25,7 +25,7 @@ export class AuthCallbackComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -52,8 +52,19 @@ export class AuthCallbackComponent implements OnInit {
           const user = JSON.parse(decodeURIComponent(params['user']));
           console.log('User info:', user);
 
-          // Redirect to dashboard
-          this.router.navigate(['/dashboard']);
+          switch (user.role) {
+            case 1:
+              this.router.navigate(['/dashboard']);
+              break;
+            case 2:
+              this.router.navigate(['/admin/dashboard']);
+              break;
+            case 3:
+              this.router.navigate(['/user/dashboard']);
+              break;
+            default:
+              this.router.navigate(['/login']);
+          }
         } catch (error) {
           console.error('Error processing authentication:', error);
           this.router.navigate(['/error'], {
