@@ -135,8 +135,10 @@
               <span>New Project</span>
             </button>
           </div>
+
           <div class="space-y-4">
             <div
+              *ngFor="let project of projects"
               class="p-4 border border-neutral-100 rounded-lg hover:shadow-md transition-all duration-300 cursor-pointer"
             >
               <div class="flex justify-between items-center mb-3">
@@ -149,7 +151,7 @@
                     >
                   </div>
                   <div>
-                    <h3 class="font-semibold">AI Integration Platform</h3>
+                    <h3 class="font-semibold">{{ project.name }}</h3>
                     <p class="text-sm text-neutral-500">
                       Frontend Team • 8 members
                     </p>

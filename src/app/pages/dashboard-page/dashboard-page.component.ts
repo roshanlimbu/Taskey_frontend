@@ -12,6 +12,12 @@ import {
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 
+interface Project {
+  id: number;
+  name: string;
+  description: string;
+}
+
 @Component({
   selector: 'app-dashboard-page',
   templateUrl: './dashboard-page.component.html',
@@ -24,9 +30,10 @@ export class DashboardPageComponent implements OnInit {
   showNewProjectForm = false;
   isSubmitting = false;
 
+  projects: Project[] = [];
+
   constructor(
     private router: Router,
-    private route: ActivatedRoute,
     private authService: AuthService,
     private fb: FormBuilder,
     private apiService: ApiService,
@@ -42,7 +49,16 @@ export class DashboardPageComponent implements OnInit {
     });
   }
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.apiService.get('sadmin/projects').subscribe({
+      next: (res: any) => {
+        this.projects = res.projects;
+      },
+      error: (err) => {
+        console.error('Error fetching projects:', err);
+      },
+    });
+  }
 
   logout() {
     this.authService.logout();
