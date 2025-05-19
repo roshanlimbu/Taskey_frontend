@@ -25,41 +25,62 @@ export class AuthCallbackComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private authService: AuthService,
-    private router: Router,
+    private router: Router
   ) {}
 
   ngOnInit() {
+    // Check URL for errors first
+    if (window.location.href.includes('error=')) {
+      const errorMessage = 'GitHub authentication failed. Please try again.';
+      this.router.navigate(['/error'], {
+        queryParams: { message: errorMessage },
+      });
+      return;
+    }
+
+    // Process token from the redirect
     this.route.queryParams.subscribe((params) => {
-      const token = params['token'];
-      const user = params['user'];
-      const error = params['error'];
+      console.log('Callback query params:', params);
 
-      if (token && user) {
-        this.authService.setToken(token);
-        const userData = JSON.parse(decodeURIComponent(user));
-        console.log('User data:', userData);
+      // Standard token handling after backend redirect
+      if (params['token'] && params['user']) {
+        try {
+          // Store the token
+          this.authService.setToken(params['token']);
 
-        // Store the role
-        this.authService.setRole(userData.role);
+          // Parse and store user info if needed
+          const user = JSON.parse(decodeURIComponent(params['user']));
+          console.log('User info:', user);
 
-        // Route based on role
-        switch (userData.role) {
-          case 1: // Super Admin
-            this.router.navigate(['/dashboard']);
-            break;
-          case 2: // Admin
-            this.router.navigate(['/adminDash']);
-            break;
-          case 3: // User
-            this.router.navigate(['/userDash']);
-            break;
-          default:
-            this.router.navigate(['/login']);
-            break;
+          // Redirect to dashboard
+          this.router.navigate(['/dashboard']);
+        } catch (error) {
+          console.error('Error processing authentication:', error);
+          this.router.navigate(['/error'], {
+            queryParams: {
+              message:
+                'Could not process authentication data. Please try again.',
+            },
+          });
         }
-      } else if (error) {
-        console.error('Login error:', decodeURIComponent(error));
-        this.router.navigate(['/login']);
+      } else if (params['error']) {
+        // Handle specific GitHub OAuth error
+        console.error('GitHub OAuth error:', params['error']);
+        this.router.navigate(['/error'], {
+          queryParams: {
+            message: `GitHub OAuth error: ${
+              params['error_description'] || params['error']
+            }`,
+          },
+        });
+      } else {
+        console.error('Missing token or user in callback params');
+        this.router.navigate(['/error'], {
+          queryParams: {
+            message:
+              'Authentication failed - missing token data. Please try again.',
+          },
+        });
       }
     });
   }
