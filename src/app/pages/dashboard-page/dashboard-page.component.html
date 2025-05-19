@@ -135,30 +135,6 @@
               <span>New Project</span>
             </button>
           </div>
-          <!-- New Project Modal/Form -->
-          <!-- <div *ngIf="showNewProjectForm" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50"> -->
-          <!--   <div class="bg-white p-6 rounded-xl shadow-lg w-full max-w-md relative"> -->
-          <!--     <button class="absolute top-2 right-2 text-neutral-400 hover:text-neutral-600" (click)="showNewProjectForm = false"> -->
-          <!--       <span class="material-symbols-outlined">close</span> -->
-          <!--     </button> -->
-          <!--     <h3 class="text-xl font-bold mb-4">Create New Project</h3> -->
-          <!--     <form [formGroup]="repoForm" (ngSubmit)="onCreateRepo()"> -->
-          <!--       <div class="mb-4"> -->
-          <!--         <label class="block mb-1 font-medium">Repository Name</label> -->
-          <!--         <input formControlName="name" placeholder="Repository Name" class="w-full border rounded px-3 py-2" required /> -->
-          <!--       </div> -->
-          <!--       <div class="mb-4"> -->
-          <!--         <label class="block mb-1 font-medium">Description</label> -->
-          <!--         <input formControlName="description" placeholder="Description" class="w-full border rounded px-3 py-2" /> -->
-          <!--       </div> -->
-          <!--       <div class="mb-4 flex items-center"> -->
-          <!--         <input type="checkbox" formControlName="private" id="privateRepo" class="mr-2" /> -->
-          <!--         <label for="privateRepo">Private</label> -->
-          <!--       </div> -->
-          <!--       <button type="submit" class="bg-primary-500 text-white px-4 py-2 rounded-lg w-full">Create Repository</button> -->
-          <!--     </form> -->
-          <!--   </div> -->
-          <!-- </div> -->
           <div class="space-y-4">
             <div
               class="p-4 border border-neutral-100 rounded-lg hover:shadow-md transition-all duration-300 cursor-pointer"
@@ -737,9 +713,71 @@
 </div>
 
 <!-- <div class="container mt-5"> -->
-<!--   <h1 class="text-center">Welcome to Your Dashboard</h1> -->
-<!--   <p class="text-center">You are successfully logged in via GitHub!</p> -->
 <div class="text-center">
   <button class="btn btn-danger" (click)="logout()">Logout</button>
 </div>
 <!-- </div> -->
+
+<!-- New Project Popup Modal -->
+<div
+  *ngIf="showNewProjectForm"
+  class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+>
+  <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md relative">
+    <h2 class="text-xl font-bold mb-4">Create New Project</h2>
+    <form [formGroup]="projectForm" (ngSubmit)="submitNewProject()">
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Project Name</label>
+        <input
+          type="text"
+          formControlName="name"
+          class="w-full border border-neutral-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          [class.border-red-500]="
+            projectForm.get('name')?.invalid && projectForm.get('name')?.touched
+          "
+        />
+        <div
+          *ngIf="
+            projectForm.get('name')?.invalid && projectForm.get('name')?.touched
+          "
+          class="text-red-500 text-xs mt-1"
+        >
+          Project name is required.
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Description</label>
+        <textarea
+          formControlName="description"
+          rows="3"
+          class="w-full border border-neutral-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+        ></textarea>
+      </div>
+      <div class="flex justify-end gap-2 mt-6">
+        <button
+          type="button"
+          class="px-4 py-2 rounded bg-neutral-200 text-neutral-700 hover:bg-neutral-300"
+          (click)="closeNewProjectForm()"
+          [disabled]="isSubmitting"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="px-4 py-2 rounded bgprimary text-white hover:bg-primary-600"
+          [disabled]="isSubmitting || projectForm.invalid"
+        >
+          <span *ngIf="!isSubmitting">Create</span>
+          <span *ngIf="isSubmitting">Creating...</span>
+        </button>
+      </div>
+    </form>
+    <button
+      class="absolute top-2 right-2 text-neutral-400 hover:text-neutral-600 text-xl"
+      (click)="closeNewProjectForm()"
+      [disabled]="isSubmitting"
+    >
+      &times;
+    </button>
+  </div>
+</div>
