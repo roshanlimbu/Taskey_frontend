@@ -138,12 +138,13 @@
 
           <div class="space-y-4">
             <div
-              *ngFor="let project of projects"
+              *ngFor="let project of projects; let i = index"
               class="p-4 border border-neutral-100 rounded-lg hover:shadow-md transition-all duration-300 cursor-pointer"
             >
-              <div class="flex justify-between items-center mb-3">
-                <div class="flex items-center gap-3">
-                  <div
+            <div class="flex justify-between items-center mb-3 relative">
+              <div class="flex items-center gap-3">
+                  
+              <div
                     class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"
                   >
                     <span class="material-symbols-outlined text-blue-600"
@@ -156,11 +157,20 @@
                       Frontend Team • 8 members
                     </p>
                   </div>
+              
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">On Track</span>
+                <button class="p-1 rounded-full hover:bg-neutral-100 transition" (click)="openContextMenu($event, i)" type="button">
+                  <span class="material-symbols-outlined">more_vert</span>
+                </button>
+                <!-- Context Menu -->
+                <div *ngIf="showContextMenu && contextMenuIndex === i" class="absolute right-0 mt-10 z-50 bg-white border rounded shadow-lg"
+                  style="min-width: 120px;" (click)="$event.stopPropagation()">
+                  <button class="block w-full px-4 py-2 text-left hover:bg-neutral-100" (click)="editProject(project)">Edit</button>
+                  <button class="block w-full px-4 py-2 text-left hover:bg-neutral-100 text-red-500" (click)="deleteProject(project.id)">Delete</button>
                 </div>
-                <span
-                  class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium"
-                  >On Track</span
-                >
+              </div>
               </div>
               <div class="mb-2">
                 <div class="flex justify-between mb-1 text-sm">
@@ -723,9 +733,9 @@
 <!-- New Project Popup Modal -->
 <div
   *ngIf="showNewProjectForm"
-  class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+  class="fixed inset-0 z-50 flex items-center justify-center glass-overlay"
 >
-  <div class="bg-white rounded-xl shadow-lg p-6 w-full max-w-md relative">
+  <div class="glass-modal p-6 w-full max-w-md relative">
     <h2 class="text-xl font-bold mb-4">Create New Project</h2>
     <form [formGroup]="projectForm" (ngSubmit)="submitNewProject()">
       <div class="mb-4">
@@ -779,6 +789,47 @@
       (click)="closeNewProjectForm()"
       [disabled]="isSubmitting"
     >
+      &times;
+    </button>
+  </div>
+</div>
+
+<!-- Edit Project Popup Modal -->
+<div *ngIf="showEditProjectForm" class="fixed inset-0 z-50 flex items-center justify-center glass-overlay">
+  <div class="glass-modal p-6 w-full max-w-md relative">
+    <h2 class="text-xl font-bold mb-4">Edit Project</h2>
+    <form [formGroup]="editProjectForm" (ngSubmit)="submitEditProject()">
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Project Name</label>
+        <input type="text" formControlName="name"
+          class="w-full border border-neutral-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" [class.border-red-500]="
+            editProjectForm.get('name')?.invalid && editProjectForm.get('name')?.touched
+          " />
+        <div *ngIf="
+            editProjectForm.get('name')?.invalid && editProjectForm.get('name')?.touched
+          " class="text-red-500 text-xs mt-1">
+          Project name is required.
+        </div>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Description</label>
+        <textarea formControlName="description" rows="3"
+          class="w-full border border-neutral-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"></textarea>
+      </div>
+      <div class="flex justify-end gap-2 mt-6">
+        <button type="button" class="px-4 py-2 rounded bg-neutral-200 text-neutral-700 hover:bg-neutral-300" (click)="closeEditProjectForm()"
+          [disabled]="isSubmittingEdit">
+          Cancel
+        </button>
+        <button type="submit" class="px-4 py-2 rounded bgprimary text-white hover:bg-primary-600"
+          [disabled]="isSubmittingEdit || editProjectForm.invalid">
+          <span *ngIf="!isSubmittingEdit">Save</span>
+          <span *ngIf="isSubmittingEdit">Saving...</span>
+        </button>
+      </div>
+    </form>
+    <button class="absolute top-2 right-2 text-neutral-400 hover:text-neutral-600 text-xl" (click)="closeEditProjectForm()"
+      [disabled]="isSubmittingEdit">
       &times;
     </button>
   </div>
