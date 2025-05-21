@@ -1,0 +1,73 @@
+<div class="min-h-screen w-full flex flex-col bg-neutral-50 py-8">
+    <div class="w-full max-w-full mx-auto px-4">
+        <ng-container *ngIf="isLoading">
+            <div class="text-center text-lg text-neutral-500 py-12">Loading project details...</div>
+        </ng-container>
+        <ng-container *ngIf="!isLoading && error">
+            <div class="text-center text-red-500 py-12">{{ error }}</div>
+        </ng-container>
+        <ng-container *ngIf="!isLoading && !error && project">
+            <div class="mb-6 flex justify-between items-start relative">
+                <div>
+                    <h1 class="text-3xl font-bold text-primary-700 mb-2">Project : {{ project.name }}</h1>
+                    <p class="text-neutral-600 text-lg">Description : {{ project.description || 'No description provided.' }}</p>
+                </div>
+                <div class="relative">
+                    <button (click)="showMenu = !showMenu" class="p-2 rounded-full hover:bg-neutral-100 transition" type="button">
+                        <span class="material-symbols-outlined">more_vert</span>
+                    </button>
+                    <div *ngIf="showMenu" class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 z-20 border border-neutral-100">
+                        <button class="block w-full px-4 py-2 text-left hover:bg-neutral-100" (click)="onAddTask(); showMenu = false;">
+                            Add Task
+                        </button>
+                        <button class="block w-full px-4 py-2 text-left hover:bg-neutral-100" (click)="onAddMember(); showMenu = false;">
+                            Add Member
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <div class="flex gap-4 min-w-[1800px]">
+                    <ng-container *ngFor="let status of statuses">
+                        <div class="bg-neutral-50 rounded-lg p-4 w-72 flex-shrink-0">
+                            <div class="font-medium text-neutral-600 mb-3 flex items-center">
+                                <span class="h-2 w-2 rounded-full mr-2" [ngClass]="status.color"></span>
+                                {{ status.label }}
+                            </div>
+                            <div cdkDropList [id]="status.id" [cdkDropListData]="getTasks(status.id)" [cdkDropListConnectedTo]="connectedDropLists"
+                                (cdkDropListDropped)="drop($event)" class="min-h-[50px] space-y-2">
+                                <div *ngFor="let task of getTasks(status.id)" cdkDrag
+                                    class="bg-white rounded-lg p-3 shadow-sm border border-neutral-200 cursor-move hover:shadow-md transition-shadow">
+                                    <div class="font-medium text-neutral-800">{{ task.title }}</div>
+                                    <div class="text-neutral-500 text-sm">{{ task.description }}</div>
+                                    <div class="flex items-center gap-2 mt-2">
+                                        <span *ngIf="task.assignee" class="text-xs text-neutral-500">
+                                            {{ task.assignee?.name }}
+                                        </span>
+                                        <div class="flex-grow"></div>
+                                        <button class="text-xs text-blue-600 hover:underline" (click)="onEditTask(task)">Edit</button>
+                                        <button class="text-xs text-red-600 hover:underline" (click)="onDeleteTask(task)">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+            <div class="mt-8">
+                <h2 class="text-xl font-semibold mb-3 text-neutral-800">Members</h2>
+                <div *ngIf="members.length === 0" class="text-neutral-400">No members yet.</div>
+                <div *ngIf="members.length > 0" class="flex flex-wrap gap-4">
+                    <div *ngFor="let member of members" class="flex items-center gap-3 bg-neutral-100 rounded-lg px-4 py-2">
+                        <img [src]="member.avatar || 'https://ui-avatars.com/api/?name=' + member.name"
+                            class="w-8 h-8 rounded-full border border-white" />
+                        <div>
+                            <div class="font-medium text-neutral-800">{{ member.name }}</div>
+                            <div class="text-neutral-500 text-xs">{{ member.email }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </ng-container>
+    </div>
+</div>
