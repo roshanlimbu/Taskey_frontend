@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
-import { ProjectService } from '../../services/project.service';
 import {
   FormBuilder,
   FormGroup,
@@ -12,6 +11,7 @@ import {
 import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { HostListener } from '@angular/core';
+import { RouterModule } from '@angular/router';
 
 interface Project {
   id: number;
@@ -22,7 +22,7 @@ interface Project {
 @Component({
   selector: 'app-dashboard-page',
   templateUrl: './dashboard-page.component.html',
-  imports: [FormsModule, CommonModule, ReactiveFormsModule],
+  imports: [FormsModule, CommonModule, ReactiveFormsModule, RouterModule],
   styleUrls: ['./dashboard-page.component.scss'],
 })
 export class DashboardPageComponent implements OnInit {
@@ -41,6 +41,7 @@ export class DashboardPageComponent implements OnInit {
   isSubmittingEdit = false;
   editProjectForm: FormGroup;
   editingProjectId: number | null = null;
+  totalProjects: number = 0;
 
   constructor(
     private router: Router,
@@ -67,6 +68,7 @@ export class DashboardPageComponent implements OnInit {
     this.apiService.get('sadmin/projects').subscribe({
       next: (res: any) => {
         this.projects = res.projects;
+        this.totalProjects = res.projects.length;
       },
       error: (err) => {
         console.error('Error fetching projects:', err);

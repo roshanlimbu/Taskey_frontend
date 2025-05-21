@@ -73,7 +73,9 @@
                 >equalizer</span
               >
             </div>
-            <div class="text-3xl font-bold text-neutral-900">12</div>
+            <div class="text-3xl font-bold text-neutral-900">
+              {{ totalProjects }}
+            </div>
             <div class="flex items-center text-green-600 text-sm">
               <span class="material-symbols-outlined text-base mr-1"
                 >arrow_upward</span
@@ -111,6 +113,7 @@
                 >task_alt</span
               >
             </div>
+            bg-yellow-500
             <div class="text-3xl font-bold text-neutral-900">187</div>
             <div class="flex items-center text-red-500 text-sm">
               <span class="material-symbols-outlined text-base mr-1"
@@ -140,11 +143,12 @@
             <div
               *ngFor="let project of projects; let i = index"
               class="p-4 border border-neutral-100 rounded-lg hover:shadow-md transition-all duration-300 cursor-pointer"
+              [routerLink]="['/project', project.id]"
+              style="position: relative;"
             >
-            <div class="flex justify-between items-center mb-3 relative">
-              <div class="flex items-center gap-3">
-                  
-              <div
+              <div class="flex justify-between items-center mb-3 relative">
+                <div class="flex items-center gap-3">
+                  <div
                     class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center"
                   >
                     <span class="material-symbols-outlined text-blue-600"
@@ -157,20 +161,23 @@
                       Frontend Team • 8 members
                     </p>
                   </div>
-              
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">On Track</span>
-                <button class="p-1 rounded-full hover:bg-neutral-100 transition" (click)="openContextMenu($event, i)" type="button">
-                  <span class="material-symbols-outlined">more_vert</span>
-                </button>
-                <!-- Context Menu -->
-                <div *ngIf="showContextMenu && contextMenuIndex === i" class="absolute right-0 mt-10 z-50 bg-white border rounded shadow-lg"
-                  style="min-width: 120px;" (click)="$event.stopPropagation()">
-                  <button class="block w-full px-4 py-2 text-left hover:bg-neutral-100" (click)="editProject(project)">Edit</button>
-                  <button class="block w-full px-4 py-2 text-left hover:bg-neutral-100 text-red-500" (click)="deleteProject(project.id)">Delete</button>
                 </div>
-              </div>
+                <div class="flex items-center gap-2">
+                  <span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">On Track</span>
+                  <button class="p-1 rounded-full hover:bg-neutral-100 transition" (click)="openContextMenu($event, i); $event.stopPropagation();" type="button">
+                    <span class="material-symbols-outlined">more_vert</span>
+                  </button>
+                  <!-- Context Menu -->
+                  <div *ngIf="showContextMenu && contextMenuIndex === i" class="absolute right-0 mt-10 z-50 bg-white border rounded shadow-lg" style="min-width: 120px"
+                    (click)="$event.stopPropagation()">
+                    <button class="block w-full px-4 py-2 text-left hover:bg-neutral-100" (click)="editProject(project)">
+                      Edit
+                    </button>
+                    <button class="block w-full px-4 py-2 text-left hover:bg-neutral-100 text-red-500" (click)="deleteProject(project.id)">
+                      Delete
+                    </button>
+                  </div>
+                  </div>
               </div>
               <div class="mb-2">
                 <div class="flex justify-between mb-1 text-sm">
@@ -178,7 +185,7 @@
                 </div>
                 <div class="w-full bg-neutral-100 rounded-full h-2">
                   <div
-                    class="bg-primary-500 h-2 rounded-full"
+                    class="bg-yellow-500 h-2 rounded-full"
                     style="width: 75%"
                   ></div>
                 </div>
@@ -205,130 +212,6 @@
                     class="w-6 h-6 rounded-full bg-neutral-200 flex items-center justify-center text-xs font-medium border border-white"
                   >
                     +5
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div
-              class="p-4 border border-neutral-100 rounded-lg hover:shadow-md transition-all duration-300 cursor-pointer"
-            >
-              <div class="flex justify-between items-center mb-3">
-                <div class="flex items-center gap-3">
-                  <div
-                    class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center"
-                  >
-                    <span class="material-symbols-outlined text-purple-600"
-                      >smartphone</span
-                    >
-                  </div>
-                  <div>
-                    <h3 class="font-semibold">Mobile App Redesign</h3>
-                    <p class="text-sm text-neutral-500">
-                      UI/UX Team • 5 members
-                    </p>
-                  </div>
-                </div>
-                <span
-                  class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 text-xs font-medium"
-                  >At Risk</span
-                >
-              </div>
-              <div class="mb-2">
-                <div class="flex justify-between mb-1 text-sm">
-                  <span>Progress</span> <span class="font-medium">45%</span>
-                </div>
-                <div class="w-full bg-neutral-100 rounded-full h-2">
-                  <div
-                    class="bg-yellow-500 h-2 rounded-full"
-                    style="width: 45%"
-                  ></div>
-                </div>
-              </div>
-              <div class="flex justify-between text-sm text-neutral-500">
-                <span>Due date: Oct 30, 2023</span>
-                <div class="flex -space-x-2">
-                  <img
-                    src="https://images.unsplash.com/photo-1607746882042-944635dfe10e?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHw0fHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
-                    class="w-6 h-6 rounded-full border border-white"
-                    keywords="team member, avatar"
-                  />
-                  <img
-                    src="https://images.unsplash.com/photo-1538688423619-a81d3f23454b?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHw1fHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
-                    class="w-6 h-6 rounded-full border border-white"
-                    keywords="team member, avatar"
-                  />
-                  <img
-                    src="https://images.unsplash.com/photo-1573497491765-dccce02b29df?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHw2fHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
-                    class="w-6 h-6 rounded-full border border-white"
-                    keywords="team member, avatar"
-                  />
-                  <div
-                    class="w-6 h-6 rounded-full bg-neutral-200 flex items-center justify-center text-xs font-medium border border-white"
-                  >
-                    +2
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div
-              class="p-4 border border-neutral-100 rounded-lg hover:shadow-md transition-all duration-300 cursor-pointer"
-            >
-              <div class="flex justify-between items-center mb-3">
-                <div class="flex items-center gap-3">
-                  <div
-                    class="w-10 h-10 bg-cyan-100 rounded-lg flex items-center justify-center"
-                  >
-                    <span class="material-symbols-outlined text-cyan-600"
-                      >cloud</span
-                    >
-                  </div>
-                  <div>
-                    <h3 class="font-semibold">
-                      Cloud Infrastructure Migration
-                    </h3>
-                    <p class="text-sm text-neutral-500">
-                      DevOps Team • 6 members
-                    </p>
-                  </div>
-                </div>
-                <span
-                  class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium"
-                  >On Track</span
-                >
-              </div>
-              <div class="mb-2">
-                <div class="flex justify-between mb-1 text-sm">
-                  <span>Progress</span> <span class="font-medium">60%</span>
-                </div>
-                <div class="w-full bg-neutral-100 rounded-full h-2">
-                  <div
-                    class="bg-primary-500 h-2 rounded-full"
-                    style="width: 60%"
-                  ></div>
-                </div>
-              </div>
-              <div class="flex justify-between text-sm text-neutral-500">
-                <span>Due date: Dec 5, 2023</span>
-                <div class="flex -space-x-2">
-                  <img
-                    src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHw3fHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
-                    class="w-6 h-6 rounded-full border border-white"
-                    keywords="team member, avatar"
-                  />
-                  <img
-                    src="https://images.unsplash.com/photo-1600880292089-90a7e086ee0c?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHw4fHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
-                    class="w-6 h-6 rounded-full border border-white"
-                    keywords="team member, avatar"
-                  />
-                  <img
-                    src="https://images.unsplash.com/photo-1521737852567-6949f3f9f2b5?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHw5fHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
-                    class="w-6 h-6 rounded-full border border-white"
-                    keywords="team member, avatar"
-                  />
-                  <div
-                    class="w-6 h-6 rounded-full bg-neutral-200 flex items-center justify-center text-xs font-medium border border-white"
-                  >
-                    +3
                   </div>
                 </div>
               </div>
@@ -803,11 +686,13 @@
         <label class="block text-sm font-medium mb-1">Project Name</label>
         <input type="text" formControlName="name"
           class="w-full border border-neutral-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" [class.border-red-500]="
-            editProjectForm.get('name')?.invalid && editProjectForm.get('name')?.touched
-          " />
+                    editProjectForm.get('name')?.invalid &&
+                    editProjectForm.get('name')?.touched
+                  " />
         <div *ngIf="
-            editProjectForm.get('name')?.invalid && editProjectForm.get('name')?.touched
-          " class="text-red-500 text-xs mt-1">
+                    editProjectForm.get('name')?.invalid &&
+                    editProjectForm.get('name')?.touched
+                  " class="text-red-500 text-xs mt-1">
           Project name is required.
         </div>
       </div>
@@ -821,15 +706,13 @@
           [disabled]="isSubmittingEdit">
           Cancel
         </button>
-        <button type="submit" class="px-4 py-2 rounded bgprimary text-white hover:bg-primary-600"
-          [disabled]="isSubmittingEdit || editProjectForm.invalid">
+        <button type="submit" class="px-4 py-2 rounded bgprimary text-white hover:bg-primary-600" [disabled]="isSubmittingEdit || editProjectForm.invalid">
           <span *ngIf="!isSubmittingEdit">Save</span>
           <span *ngIf="isSubmittingEdit">Saving...</span>
         </button>
       </div>
     </form>
-    <button class="absolute top-2 right-2 text-neutral-400 hover:text-neutral-600 text-xl" (click)="closeEditProjectForm()"
-      [disabled]="isSubmittingEdit">
+    <button class="absolute top-2 right-2 text-neutral-400 hover:text-neutral-600 text-xl" (click)="closeEditProjectForm()" [disabled]="isSubmittingEdit">
       &times;
     </button>
   </div>
