@@ -8,10 +8,11 @@ import {
   moveItemInArray,
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-project',
-  imports: [CommonModule, DragDropModule],
+  imports: [CommonModule, DragDropModule, FormsModule],
   templateUrl: './project.component.html',
   styleUrl: './project.component.scss',
   standalone: true,
@@ -24,6 +25,14 @@ export class ProjectComponent {
   isLoading = true;
   error: string | null = null;
   showMenu = false;
+  showAddTask = false;
+  newTaskTitle = '';
+  newTaskDescription = '';
+  showSuccessToast = false;
+  showAddMember = false;
+  newMember = '';
+  showMemberSuccessToast = false;
+  allUsers: [] = [];
 
   statuses = [
     { id: 'ready_to_start', label: 'Ready to Start', color: 'bg-blue-400' },
@@ -50,10 +59,7 @@ export class ProjectComponent {
     return this.statuses.map((s) => s.id);
   }
 
-  constructor(
-    private route: ActivatedRoute,
-    private apiService: ApiService,
-  ) {
+  constructor(private route: ActivatedRoute, private apiService: ApiService) {
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       this.projectId = id ? +id : null;
@@ -62,7 +68,16 @@ export class ProjectComponent {
       }
     });
   }
-  ngOnInit() {}
+  ngOnInit() {
+    this.apiService.get('sadmin/users').subscribe({
+      next: (res: any) => {
+        this.allUsers = res.data || res;
+      },
+      error: (err) => {
+        console.error('Failed to load users:', err);
+      },
+    });
+  }
 
   fetchProjectDetails(id: number) {
     this.isLoading = true;
@@ -132,14 +147,14 @@ export class ProjectComponent {
       moveItemInArray(
         event.container.data,
         event.previousIndex,
-        event.currentIndex,
+        event.currentIndex
       );
     } else {
       transferArrayItem(
         event.previousContainer.data,
         event.container.data,
         event.previousIndex,
-        event.currentIndex,
+        event.currentIndex
       );
       // Update task status in backend
       const task = event.container.data[event.currentIndex];
@@ -157,5 +172,48 @@ export class ProjectComponent {
         },
       });
     }
+  }
+
+  submitAddTask() {
+    if (!this.projectId || !this.newTaskTitle) return;
+    const payload = {
+      title: this.newTaskTitle,
+      description: this.newTaskDescription,
+    };
+    this.apiService
+      .post(`sadmin/projects/${this.projectId}/tasks`, payload)
+      .subscribe({
+        next: () => {
+          this.fetchProjectDetails(this.projectId!);
+          this.showAddTask = false;
+          this.newTaskTitle = '';
+          this.newTaskDescription = '';
+          this.showSuccessToast = true;
+          setTimeout(() => (this.showSuccessToast = false), 2000);
+        },
+        error: () => {
+          alert('Failed to add task.');
+        },
+      });
+  }
+
+  submitAddMember() {
+    if (!this.projectId || !this.newMember) return;
+    // You may want to adjust the payload depending on your backend (e.g., { user_id: ... } or { email: ... })
+    const payload = { user: this.newMember };
+    this.apiService
+      .post(`sadmin/projects/${this.projectId}/members`, payload)
+      .subscribe({
+        next: () => {
+          this.fetchProjectDetails(this.projectId!);
+          this.showAddMember = false;
+          this.newMember = '';
+          this.showMemberSuccessToast = true;
+          setTimeout(() => (this.showMemberSuccessToast = false), 2000);
+        },
+        error: () => {
+          alert('Failed to add member.');
+        },
+      });
   }
 }
