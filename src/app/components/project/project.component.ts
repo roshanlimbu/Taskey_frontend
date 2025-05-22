@@ -41,6 +41,10 @@ export class ProjectComponent {
   allUsers: User[] = [];
   openMemberMenu: number | null = null;
   project_lead_name: string | null = null;
+  editingTask: any = null;
+  editTaskTitle: string = '';
+  editTaskDescription: string = '';
+  deletingTask: any = null;
 
   statuses = [
     { id: 'pending', label: 'Pending', color: 'bg-gray-500' },
@@ -271,5 +275,63 @@ export class ProjectComponent {
           alert('Failed to remove lead.');
         },
       });
+  }
+
+  startEditTask(task: any) {
+    this.editingTask = task;
+    this.editTaskTitle = task.title;
+    this.editTaskDescription = task.description;
+  }
+
+  submitEditTask() {
+    if (!this.editingTask || !this.editTaskTitle) return;
+    const payload = {
+      title: this.editTaskTitle,
+      description: this.editTaskDescription,
+    };
+    this.apiService
+      .put(`sadmin/tasks/${this.editingTask.id}`, payload)
+      .subscribe({
+        next: () => {
+          this.fetchProjectDetails(this.projectId!);
+          this.editingTask = null;
+          this.editTaskTitle = '';
+          this.editTaskDescription = '';
+        },
+        error: () => {
+          alert('Failed to edit task.');
+        },
+      });
+  }
+
+  startDeleteTask(task: any) {
+    this.deletingTask = task;
+  }
+
+  confirmDeleteTask() {
+    if (!this.deletingTask) return;
+    this.apiService.delete(`sadmin/tasks/${this.deletingTask.id}`).subscribe({
+      next: () => {
+        this.fetchProjectDetails(this.projectId!);
+        this.deletingTask = null;
+      },
+      error: () => {
+        alert('Failed to delete task.');
+      },
+    });
+  }
+
+  toggleAssignMenu(task: any) {
+    task.showAssignMenu = !task.showAssignMenu;
+  }
+
+  assignTaskToMember(task: any, member: any) {
+    if (!task || !task.id || !member || !member.id) return;
+    const payload = { user_id: member.id };
+    this.apiService.post(`sadmin/tasks/${task.id}/assign`, payload).subscribe({
+      next: () => this.fetchProjectDetails(this.projectId!),
+      error: () => alert('Failed to assign user to task.'),
+    });
+    task.showAssignMenu = false;
   }
 }
