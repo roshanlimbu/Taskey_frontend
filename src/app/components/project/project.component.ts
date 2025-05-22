@@ -9,6 +9,12 @@ import {
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
+interface User {
+  id: number;
+  github_id: string;
+  name: string;
+  email: string;
+}
 
 @Component({
   selector: 'app-project',
@@ -32,9 +38,12 @@ export class ProjectComponent {
   showAddMember = false;
   newMember = '';
   showMemberSuccessToast = false;
-  allUsers: [] = [];
+  allUsers: User[] = [];
+  openMemberMenu: number | null = null;
+  project_lead_name: string | null = null;
 
   statuses = [
+    { id: 'pending', label: 'Pending', color: 'bg-gray-500' },
     { id: 'ready_to_start', label: 'Ready to Start', color: 'bg-blue-400' },
     { id: 'in_progress', label: 'In Progress', color: 'bg-yellow-500' },
     { id: 'blocked', label: 'Blocked', color: 'bg-red-500' },
@@ -45,7 +54,6 @@ export class ProjectComponent {
       label: 'Awaiting Feedback',
       color: 'bg-orange-400',
     },
-    { id: 'pending', label: 'Pending', color: 'bg-gray-500' },
     { id: 'done', label: 'Done', color: 'bg-green-500' },
     { id: 'cancelled', label: 'Cancelled', color: 'bg-neutral-400' },
     {
@@ -85,6 +93,7 @@ export class ProjectComponent {
     this.apiService.get(`sadmin/projects/${id}`).subscribe({
       next: (res: any) => {
         this.project = res.project || res.data || res;
+        this.project_lead_name = res.project_lead_name;
         this.tasks = res.tasks || this.project.tasks || [];
         this.members = res.members || this.project.members || [];
         this.isLoading = false;
@@ -199,8 +208,7 @@ export class ProjectComponent {
 
   submitAddMember() {
     if (!this.projectId || !this.newMember) return;
-    // You may want to adjust the payload depending on your backend (e.g., { user_id: ... } or { email: ... })
-    const payload = { user: this.newMember };
+    const payload = { member_ids: [this.newMember] };
     this.apiService
       .post(`sadmin/projects/${this.projectId}/members`, payload)
       .subscribe({
@@ -213,6 +221,54 @@ export class ProjectComponent {
         },
         error: () => {
           alert('Failed to add member.');
+        },
+      });
+  }
+
+  toggleMemberMenu(index: number) {
+    this.openMemberMenu = this.openMemberMenu === index ? null : index;
+  }
+
+  removeMember(member: User) {
+    if (!this.projectId) return;
+    const payload = { member_ids: [member.id] };
+    this.apiService
+      .post(`sadmin/projects/${this.projectId}/remove-members`, payload)
+      .subscribe({
+        next: () => {
+          this.fetchProjectDetails(this.projectId!);
+        },
+        error: () => {
+          alert('Failed to remove member.');
+        },
+      });
+  }
+
+  assignLead(member: User) {
+    if (!this.projectId) return;
+    const payload = { user_id: member.id };
+    this.apiService
+      .post(`sadmin/projects/${this.projectId}/assign-lead`, payload)
+      .subscribe({
+        next: () => {
+          this.fetchProjectDetails(this.projectId!);
+        },
+        error: () => {
+          alert('Failed to assign lead.');
+        },
+      });
+  }
+
+  removeLead() {
+    if (!this.projectId) return;
+    this.apiService
+      .post(`sadmin/projects/${this.projectId}/remove-lead`, {})
+      .subscribe({
+        next: () => {
+          this.fetchProjectDetails(this.projectId!);
+        },
+        error: () => {
+          alert('Failed to remove lead.');
         },
       });
   }
