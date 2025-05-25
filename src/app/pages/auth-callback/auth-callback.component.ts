@@ -51,6 +51,7 @@ export class AuthCallbackComponent implements OnInit {
           // Parse and store user info if needed
           const user = JSON.parse(decodeURIComponent(params['user']));
           console.log('User info:', user);
+          localStorage.setItem('user', JSON.stringify(user));
 
           switch (user.role) {
             case 1:
