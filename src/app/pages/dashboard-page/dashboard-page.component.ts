@@ -42,6 +42,10 @@ export class DashboardPageComponent implements OnInit {
   editProjectForm: FormGroup;
   editingProjectId: number | null = null;
   totalProjects: number = 0;
+  user: any;
+  allUsers: any[] = [];
+
+  showProfileDropdown = false;
 
   constructor(
     private router: Router,
@@ -65,6 +69,16 @@ export class DashboardPageComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.user = JSON.parse(localStorage.getItem('user') || '{}');
+    this.apiService.get('sadmin/users').subscribe({
+      next: (res: any) => {
+        this.allUsers = res.users;
+      },
+      error: (err) => {
+        console.error('Error fetching users:', err);
+      },
+    });
+    console.log(this.user);
     this.apiService.get('sadmin/projects').subscribe({
       next: (res: any) => {
         this.projects = res.projects;
@@ -119,6 +133,9 @@ export class DashboardPageComponent implements OnInit {
     if (this.showContextMenu) {
       this.showContextMenu = false;
       this.contextMenuIndex = null;
+    }
+    if (this.showProfileDropdown) {
+      this.showProfileDropdown = false;
     }
   }
 
