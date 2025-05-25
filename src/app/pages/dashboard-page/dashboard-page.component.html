@@ -483,76 +483,27 @@
           </button>
         </div>
         <div class="space-y-6">
-          <div>
-            <div class="flex justify-between items-center mb-2">
-              <span class="font-medium">Frontend Development</span>
-              <span class="text-sm font-medium">72%</span>
-            </div>
-            <div class="w-full bg-neutral-100 rounded-full h-2.5">
-              <div
-                class="bg-primary-500 h-2.5 rounded-full"
-                style="width: 72%"
-              ></div>
-            </div>
-          </div>
-          <div>
-            <div class="flex justify-between items-center mb-2">
-              <span class="font-medium">Backend Development</span>
-              <span class="text-sm font-medium">45%</span>
-            </div>
-            <div class="w-full bg-neutral-100 rounded-full h-2.5">
-              <div
-                class="bg-primary-500 h-2.5 rounded-full"
-                style="width: 45%"
-              ></div>
-            </div>
-          </div>
-          <div>
-            <div class="flex justify-between items-center mb-2">
-              <span class="font-medium">Design System</span>
-              <span class="text-sm font-medium">90%</span>
-            </div>
-            <div class="w-full bg-neutral-100 rounded-full h-2.5">
-              <div
-                class="bg-primary-500 h-2.5 rounded-full"
-                style="width: 90%"
-              ></div>
-            </div>
-          </div>
-          <div>
-            <div class="flex justify-between items-center mb-2">
-              <span class="font-medium">User Testing</span>
-              <span class="text-sm font-medium">30%</span>
-            </div>
-            <div class="w-full bg-neutral-100 rounded-full h-2.5">
-              <div
-                class="bg-primary-500 h-2.5 rounded-full"
-                style="width: 30%"
-              ></div>
-            </div>
-          </div>
-          <div>
-            <div class="flex justify-between items-center mb-2">
-              <span class="font-medium">Documentation</span>
-              <span class="text-sm font-medium">58%</span>
-            </div>
-            <div class="w-full bg-neutral-100 rounded-full h-2.5">
-              <div
-                class="bg-primary-500 h-2.5 rounded-full"
-                style="width: 58%"
-              ></div>
-            </div>
-          </div>
+          <ng-container *ngFor="let project of projects | slice:0:5">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="font-medium">{{ project.name }}</span>
+                <span class="text-sm   font-medium">{{ project.progress_percentage }}%</span>
+                </div>
+                <div class="w-full bg-neutral-100 rounded-full h-2.5">
+                  <div class="bg-yellow-500 h-2.5 rounded-full" [style.width.%]="project.progress_percentage"></div>
+                  </div>
+                  </div>
+          </ng-container>
         </div>
         <div class="mt-6 pt-4 border-t border-neutral-100">
           <h3 class="font-medium mb-3">Overall Completion</h3>
           <div class="flex items-end gap-2">
-            <div class="text-3xl font-bold text-primary-600">59%</div>
+            <div class="text-3xl font-bold text-primary-600">
+              {{ overallCompletion() }}%
+            </div>
             <div class="text-sm text-green-600 flex items-center">
-              <span class="material-symbols-outlined text-sm mr-1"
-                >arrow_upward</span
-              >
-              <span>4% this week</span>
+              <span class="material-symbols-outlined text-sm mr-1">arrow_upward</span>
+              <span>Progress</span>
             </div>
           </div>
         </div>
@@ -561,11 +512,6 @@
   </div>
 </div>
 
-<!-- <div class="container mt-5"> -->
-<div class="text-center">
-  <button class="btn btn-danger" (click)="logout()">Logout</button>
-</div>
-<!-- </div> -->
 
 <!-- New Project Popup Modal -->
 <div

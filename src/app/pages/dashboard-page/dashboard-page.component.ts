@@ -107,12 +107,6 @@ export class DashboardPageComponent implements OnInit {
         console.error('Error fetching projects:', err);
       },
     });
-
-    this.http
-      .get<{ projects: any[] }>('YOUR_API_ENDPOINT/projects')
-      .subscribe((response) => {
-        this.projects = response.projects;
-      });
   }
 
   logout() {
@@ -256,5 +250,14 @@ export class DashboardPageComponent implements OnInit {
     const today = new Date();
     const due = new Date(dueDate);
     return Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+  }
+
+  overallCompletion(): number {
+    if (!this.projects.length) return 0;
+    const total = this.projects.reduce(
+      (sum, p) => sum + (p.progress_percentage || 0),
+      0
+    );
+    return Math.round(total / this.projects.length);
   }
 }
