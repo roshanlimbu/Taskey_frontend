@@ -17,6 +17,10 @@ interface Project {
   id: number;
   name: string;
   description: string;
+  due_date: string;
+  progress_percentage: number;
+  total_tasks: number;
+  completed_tasks: number;
 }
 
 @Component({
