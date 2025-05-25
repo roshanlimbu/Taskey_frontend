@@ -47,6 +47,10 @@ export class DashboardPageComponent implements OnInit {
 
   showProfileDropdown = false;
 
+  showAllMembersModal = false;
+
+  showAllProjectsModal = false;
+
   constructor(
     private router: Router,
     private authService: AuthService,
@@ -70,9 +74,11 @@ export class DashboardPageComponent implements OnInit {
 
   ngOnInit() {
     this.user = JSON.parse(localStorage.getItem('user') || '{}');
+
     this.apiService.get('sadmin/users').subscribe({
       next: (res: any) => {
         this.allUsers = res.users;
+        console.log(this.allUsers);
       },
       error: (err) => {
         console.error('Error fetching users:', err);
@@ -189,5 +195,29 @@ export class DashboardPageComponent implements OnInit {
 
   showProfile() {
     this.router.navigate(['/profile']);
+  }
+
+  viewAllMembers() {
+    this.router.navigate(['/user/dashboard']);
+  }
+
+  openAllMembersModal() {
+    this.showAllMembersModal = true;
+  }
+
+  closeAllMembersModal() {
+    this.showAllMembersModal = false;
+  }
+
+  openAllProjectsModal() {
+    this.showAllProjectsModal = true;
+  }
+
+  closeAllProjectsModal() {
+    this.showAllProjectsModal = false;
+  }
+
+  goToProject(projectId: number) {
+    this.router.navigate(['/project', projectId]);
   }
 }
