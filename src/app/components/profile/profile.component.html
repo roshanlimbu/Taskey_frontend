@@ -1,33 +1,62 @@
 <div class="max-w-xl mx-auto bg-white rounded-xl shadow-lg p-8 mt-8">
-    <div class="flex flex-col items-center gap-4">
-        <img [src]="userProfile.profile_image || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxfHxwcm9maWxlfGVufDB8fHx8MTc0NjM5OTk0NHww&ixlib=rb-4.0.3&q=80&w=1080'"
-            alt="Profile" class="w-24 h-24 rounded-full border-4 border-primary-500 shadow-md object-cover" />
-        <h2 class="text-2xl font-bold text-neutral-800">{{ userProfile.name }}</h2>
-        <div class="flex items-center gap-2">
-            <span class="text-neutral-500">Dev Role:</span>
-            <span *ngIf="!editMode" class="font-semibold">{{ userProfile.dev_role || 'Not set' }}</span>
-            <form *ngIf="editMode" [formGroup]="profileForm" class="flex items-center gap-2">
-                <input formControlName="dev_role" class="border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
-                    placeholder="Enter dev role" />
-            </form>
-            <button *ngIf="!editMode" class="ml-2 px-3 py-1 rounded bg-primary-500 text-white hover:bg-primary-600 transition" (click)="enableEdit()">
-                Edit
-            </button>
-        </div>
-        <div *ngIf="editMode" class="flex gap-2 mt-2">
-            <button class="px-4 py-1 rounded bg-green-500 text-white hover:bg-green-600 transition" (click)="saveProfile()" [disabled]="loading">
-                Save
-            </button>
-            <button class="px-4 py-1 rounded bg-neutral-300 text-neutral-700 hover:bg-neutral-400 transition" (click)="editMode = false"
-                [disabled]="loading">
-                Cancel
-            </button>
-        </div>
-        <div *ngIf="successMsg" class="text-green-600 mt-2">{{ successMsg }}</div>
-        <div *ngIf="errorMsg" class="text-red-600 mt-2">{{ errorMsg }}</div>
+  <div class="flex flex-col items-center gap-4">
+    <img
+      [src]="
+        userProfile.profile_image ||
+        'https://images.unsplash.com/photo-1511367461989-f85a21fda167?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxfHxwcm9maWxlfGVufDB8fHx8MTc0NjM5OTk0NHww&ixlib=rb-4.0.3&q=80&w=1080'
+      "
+      alt="Profile"
+      class="w-24 h-24 rounded-full border-4 border-primary-500 shadow-md object-cover"
+    />
+    <h2 class="text-2xl font-bold text-neutral-800">{{ userProfile.name }}</h2>
+    <div class="flex items-center gap-2">
+      <span class="text-neutral-500">Dev Role:</span>
+      <span *ngIf="!editMode" class="font-semibold">{{
+        userProfile.dev_role || "Not set"
+      }}</span>
+      <form
+        *ngIf="editMode"
+        [formGroup]="profileForm"
+        class="flex items-center gap-2"
+      >
+        <input
+          formControlName="dev_role"
+          class="border rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          placeholder="Enter dev role"
+        />
+      </form>
+      <button
+        *ngIf="!editMode"
+        class="ml-2 px-3 py-1 rounded bgprimary text-white hover:bg-primary-600 transition"
+        (click)="enableEdit()"
+      >
+        Edit
+      </button>
     </div>
-    <div class="mt-6 text-center text-neutral-500">
-        <div><span class="font-semibold">Email:</span> {{ userProfile.email }}</div>
-        <div><span class="font-semibold">Role:</span> {{RoleMapString.split(', ')[userProfile.role]}}</div>
+    <div *ngIf="editMode" class="flex gap-2 mt-2">
+      <button
+        class="px-4 py-1 rounded bg-green-500 text-white hover:bg-green-600 transition"
+        (click)="saveProfile()"
+        [disabled]="loading"
+      >
+        Save
+      </button>
+      <button
+        class="px-4 py-1 rounded bg-neutral-300 text-neutral-700 hover:bg-neutral-400 transition"
+        (click)="editMode = false"
+        [disabled]="loading"
+      >
+        Cancel
+      </button>
     </div>
+    <div *ngIf="successMsg" class="text-green-600 mt-2">{{ successMsg }}</div>
+    <div *ngIf="errorMsg" class="text-red-600 mt-2">{{ errorMsg }}</div>
+  </div>
+  <div class="mt-6 text-center text-neutral-500">
+    <div><span class="font-semibold">Email:</span> {{ userProfile.email }}</div>
+    <div>
+      <span class="font-semibold">Role:</span>
+      {{ RoleMapString.split(", ")[userProfile.role] }}
+    </div>
+  </div>
 </div>
