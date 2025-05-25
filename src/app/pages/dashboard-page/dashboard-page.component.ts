@@ -69,10 +69,12 @@ export class DashboardPageComponent implements OnInit {
     this.projectForm = this.fb.group({
       name: ['', Validators.required],
       description: [''],
+      due_date: [''],
     });
     this.editProjectForm = this.fb.group({
       name: ['', Validators.required],
       description: [''],
+      due_date: [''],
     });
   }
 
@@ -157,6 +159,7 @@ export class DashboardPageComponent implements OnInit {
     this.editProjectForm.patchValue({
       name: project.name,
       description: project.description,
+      due_date: project.due_date,
     });
   }
 
