@@ -1,0 +1,62 @@
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+}
+
+.login-box {
+  background: white;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.login-header {
+  margin-bottom: 40px;
+}
+.login-header h1 {
+  color: #2d3748;
+  font-size: 2rem;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+.login-header p {
+  color: #718096;
+  font-size: 1.1rem;
+}
+
+.login-content .github-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px 24px;
+  background: #24292e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.login-content .github-btn:hover {
+  background: #2f363d;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.login-content .github-btn:active {
+  transform: translateY(0);
+}
+.login-content .github-btn .github-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+  fill: currentColor;
+}/*# sourceMappingURL=login-page.component.css.map */
