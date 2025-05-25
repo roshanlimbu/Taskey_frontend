@@ -227,30 +227,8 @@
                   ></div>
                 </div>
               </div>
-              <div class="flex justify-between text-sm text-neutral-500">
-                <span>Due date: Nov 15, 2023</span>
-                <div class="flex -space-x-2">
-                  <img
-                    src="https://images.unsplash.com/photo-1562788869-4ed32648eb72?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxfHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
-                    class="w-6 h-6 rounded-full border border-white"
-                    keywords="team member, avatar"
-                  />
-                  <img
-                    src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwyfHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
-                    class="w-6 h-6 rounded-full border border-white"
-                    keywords="team member, avatar"
-                  />
-                  <img
-                    src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwzfHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
-                    class="w-6 h-6 rounded-full border border-white"
-                    keywords="team member, avatar"
-                  />
-                  <div
-                    class="w-6 h-6 rounded-full bg-neutral-200 flex items-center justify-center text-xs font-medium border border-white"
-                  >
-                    +5
-                  </div>
-                </div>
+              <div class="text-sm text-neutral-500">
+                <span>Due date: {{project.due_date}}</span>
               </div>
             </div>
           </div>
@@ -322,24 +300,25 @@
             Upcoming Deadlines
           </h2>
           <div class="space-y-3">
-            <div
-              class="p-3 border-l-4 border-red-500 rounded-r-lg bg-neutral-50 hover:bg-red-50 transition-colors duration-300 cursor-pointer"
-            >
-              <h3 class="font-medium">Mobile App Redesign</h3>
-              <p class="text-xs text-neutral-500">Due in 2 days</p>
-            </div>
-            <div
-              class="p-3 border-l-4 border-yellow-500 rounded-r-lg bg-neutral-50 hover:bg-yellow-50 transition-colors duration-300 cursor-pointer"
-            >
-              <h3 class="font-medium">User Testing Session</h3>
-              <p class="text-xs text-neutral-500">Due in 5 days</p>
-            </div>
-            <div
-              class="p-3 border-l-4 border-green-500 rounded-r-lg bg-neutral-50 hover:bg-green-50 transition-colors duration-300 cursor-pointer"
-            >
-              <h3 class="font-medium">API Documentation</h3>
-              <p class="text-xs text-neutral-500">Due in 2 weeks</p>
-            </div>
+            <ng-container *ngFor="let project of projects | slice:0:3">
+              <div
+                class="p-3 border-l-4 rounded-r-lg bg-neutral-50 transition-colors duration-300 cursor-pointer"
+                [ngClass]="{
+                  'border-red-500 hover:bg-red-50': daysUntilDue(project.due_date) <= 3,
+                  'border-yellow-500 hover:bg-yellow-50': daysUntilDue(project.due_date) > 3 && daysUntilDue(project.due_date) <= 7,
+                  'border-green-500 hover:bg-green-50': daysUntilDue(project.due_date) > 7
+                }"
+              >
+                <h3 class="font-medium">{{ project.name }}</h3>
+                <p class="text-xs text-neutral-500">
+                  Due in
+                  <span *ngIf="daysUntilDue(project.due_date) > 1">{{ daysUntilDue(project.due_date) }} days</span>
+                  <span *ngIf="daysUntilDue(project.due_date) === 1">1 day</span>
+                  <span *ngIf="daysUntilDue(project.due_date) === 0">today</span>
+                  <span *ngIf="daysUntilDue(project.due_date) < 0">overdue</span>
+                </p>
+                </div>
+            </ng-container>
           </div>
         </div>
       </div>

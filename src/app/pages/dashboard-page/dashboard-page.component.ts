@@ -12,6 +12,8 @@ import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { HostListener } from '@angular/core';
 import { RouterModule } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { differenceInCalendarDays } from 'date-fns';
 
 interface Project {
   id: number;
@@ -63,7 +65,8 @@ export class DashboardPageComponent implements OnInit {
     private router: Router,
     private authService: AuthService,
     private fb: FormBuilder,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private http: HttpClient
   ) {
     this.repoForm = this.fb.group({
       name: ['', Validators.required],
@@ -104,6 +107,12 @@ export class DashboardPageComponent implements OnInit {
         console.error('Error fetching projects:', err);
       },
     });
+
+    this.http
+      .get<{ projects: any[] }>('YOUR_API_ENDPOINT/projects')
+      .subscribe((response) => {
+        this.projects = response.projects;
+      });
   }
 
   logout() {
@@ -241,5 +250,11 @@ export class DashboardPageComponent implements OnInit {
     this.toastType = type;
     this.showToast = true;
     setTimeout(() => (this.showToast = false), 2000);
+  }
+
+  daysUntilDue(dueDate: string): number {
+    const today = new Date();
+    const due = new Date(dueDate);
+    return Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   }
 }

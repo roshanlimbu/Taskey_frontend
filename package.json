@@ -25,6 +25,7 @@
     "@tailwindcss/postcss": "^4.0.17",
     "@types/jsonwebtoken": "^9.0.9",
     "bootstrap-icons": "^1.11.3",
+    "date-fns": "^4.1.0",
     "jsonwebtoken": "^9.0.2",
     "postcss": "^8.5.3",
     "rxjs": "~7.8.0",
