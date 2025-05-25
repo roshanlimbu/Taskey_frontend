@@ -31,10 +31,6 @@ export const routes: Routes = [
       ),
   },
 
-  {
-    path: 'user',
-    loadChildren: () => import('./routes/user.routes').then((m) => m.routes),
-  },
 
   {
     path: 'admin',
