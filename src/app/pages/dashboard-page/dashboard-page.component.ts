@@ -186,4 +186,8 @@ export class DashboardPageComponent implements OnInit {
       },
     });
   }
+
+  showProfile() {
+    this.router.navigate(['/profile']);
+  }
 }
