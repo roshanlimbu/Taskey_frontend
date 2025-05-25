@@ -7,7 +7,7 @@
 
 .project-context-menu {
   min-width: 120px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 .glass-overlay {
   background: rgba(255, 255, 255, 0.25);
@@ -25,3 +25,7 @@
   border-radius: 1rem;
   border: 1px solid rgba(255, 255, 255, 0.28);
 }
+.bgprimary {
+  background-color: #b9619a;
+}
+

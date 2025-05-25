@@ -51,6 +51,10 @@ export class DashboardPageComponent implements OnInit {
 
   showAllProjectsModal = false;
 
+  showToast = false;
+  toastMessage = '';
+  toastType: 'success' | 'error' = 'success';
+
   constructor(
     private router: Router,
     private authService: AuthService,
@@ -115,14 +119,15 @@ export class DashboardPageComponent implements OnInit {
     this.isSubmitting = true;
 
     this.apiService.post('sadmin/projects', this.projectForm.value).subscribe({
-      next: (res: any) => {
-        if (res.status === 201) {
-          this.isSubmitting = false;
-          this.closeNewProjectForm();
-        }
+      next: (response: any) => {
+        this.isSubmitting = false;
+        this.closeNewProjectForm();
+        this.ngOnInit();
+        this.showToastMessage('Project created successfully!', 'success');
       },
       error: (err) => {
         this.isSubmitting = false;
+        this.showToastMessage('Error creating project', 'error');
         console.error('Error creating project:', err);
       },
     });
@@ -173,21 +178,24 @@ export class DashboardPageComponent implements OnInit {
           this.isSubmittingEdit = false;
           this.closeEditProjectForm();
           this.ngOnInit();
+          this.showToastMessage('Project updated successfully!', 'success');
         },
         error: (err) => {
           this.isSubmittingEdit = false;
+          this.showToastMessage('Error updating project', 'error');
           console.error('Error editing project:', err);
         },
       });
   }
 
   deleteProject(project: any) {
-    this.showContextMenu = false;
-    this.apiService.delete(`sadmin/projects/${project}`).subscribe({
+    this.apiService.post(`sadmin/projects/${project}`).subscribe({
       next: (res: any) => {
         this.ngOnInit();
+        this.showToastMessage('Project deleted successfully!', 'success');
       },
       error: (err) => {
+        this.showToastMessage('Error deleting project', 'error');
         console.error('Error deleting project:', err);
       },
     });
@@ -219,5 +227,12 @@ export class DashboardPageComponent implements OnInit {
 
   goToProject(projectId: number) {
     this.router.navigate(['/project', projectId]);
+  }
+
+  showToastMessage(message: string, type: 'success' | 'error' = 'success') {
+    this.toastMessage = message;
+    this.toastType = type;
+    this.showToast = true;
+    setTimeout(() => (this.showToast = false), 2000);
   }
 }
