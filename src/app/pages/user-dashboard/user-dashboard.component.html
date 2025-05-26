@@ -64,4 +64,51 @@
       </div>
     </div>
   </div>
+<div class="flex flex-col md:flex-row gap-6 mt-4">
+    <!-- Sidebar: Project List -->
+    <aside class="bg-neutral-800 rounded-2xl shadow-lg border border-neutral-900 p-4 w-full md:w-64 flex-shrink-0 mb-4 md:mb-0">
+        <h2 class="text-lg font-bold mb-4 text-white">My Projects</h2>
+        <ul class="space-y-3">
+            <li *ngIf="!dashboardData?.projects?.length" class="text-neutral-400 text-sm">No projects found.</li>
+            <li *ngFor="let project of dashboardData?.projects" class="">
+                <div class="px-3 py-2  rounded-lg bg-neutral-700 cursor-pointer border border-transparent transition hover:bg-neutral-600">
+                    <div class="text-white font-semibold">{{ project.name }}</div>
+                    <div class="text-neutral-300 text-xs mb-1">{{ project.description || 'No description' }}</div>
+                    <div class="text-neutral-400 text-xs">Due: {{ project.due_date || 'N/A' }}</div>
+                </div>
+            </li>
+        </ul>
+    </aside>
+    <!-- Main: Kanban Board Card -->
+    <main class="flex-1">
+        <div class="bg-white rounded-2xl shadow-lg border border-neutral-100 p-6 h-full">
+            <div class="overflow-x-auto ">
+                <div class="flex gap-4 flex-wrap md:flex-nowrap">
+                    <ng-container *ngFor="let status of statuses">
+                        <div class="bg-neutral-50 rounded-lg p-4 w-full md:w-72 flex-shrink-0 min-h-[500px] overflow-y-auto">
+                            <div class="font-medium text-neutral-600 mb-3 flex items-center">
+                                <span class="h-2 w-2 rounded-full mr-2" [ngClass]="status.color"></span>
+                                {{ status.label }}
+                            </div>
+                            <div class="min-h-[50px] space-y-2">
+                                <ng-container *ngIf="kanban[status.id]?.length; else noTasks">
+                                    <div *ngFor="let task of kanban[status.id]"
+                                        class="bg-white rounded-lg p-3 shadow-sm border border-neutral-200 hover:shadow-md transition-shadow">
+                                        <div class="font-medium text-neutral-800">{{ task.title }}</div>
+                                        <div class="text-neutral-500 text-sm">{{ task.description }}</div>
+                                        <div class="text-xs text-neutral-500 mt-1">Due: {{ task.due_date || 'N/A' }}</div>
+                                        <div class="text-xs text-neutral-500">Project: {{ getProjectName(task.project_id) }}</div>
+                                    </div>
+                                </ng-container>
+                                <ng-template #noTasks>
+                                    <div class="text-xs text-neutral-400">No tasks</div>
+                                </ng-template>
+                            </div>
+                        </div>
+                    </ng-container>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
 </div>
