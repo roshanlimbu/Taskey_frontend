@@ -92,7 +92,6 @@ export class ProjectComponent {
     this.apiService.get('sadmin/users').subscribe({
       next: (res: any) => {
         this.allUsers = res.users;
-        // console.log(this.allUsers);
       },
       error: (err) => {
         console.error('Failed to load users:', err);
