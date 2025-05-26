@@ -2,10 +2,17 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
+import { FormsModule } from '@angular/forms';
+import {
+  CdkDragDrop,
+  DragDropModule,
+  moveItemInArray,
+  transferArrayItem,
+} from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-user-dashboard',
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, DragDropModule],
   templateUrl: './user-dashboard.component.html',
   styleUrl: './user-dashboard.component.scss',
 })
@@ -115,6 +122,45 @@ export class UserDashboardComponent implements OnInit {
         return 'bg-teal-50';
       default:
         return 'bg-neutral-50';
+    }
+  }
+
+  get connectedDropLists() {
+    return this.statuses.map((s) => s.id);
+  }
+
+  drop(event: CdkDragDrop<any[]>) {
+    if (event.previousContainer === event.container) {
+      moveItemInArray(
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex
+      );
+    } else {
+      const task = event.previousContainer.data[event.previousIndex];
+      const oldStatus = task.status;
+      task.status = event.container.id;
+      transferArrayItem(
+        event.previousContainer.data,
+        event.container.data,
+        event.previousIndex,
+        event.currentIndex
+      );
+      this.apiService
+        .put(`tasks/${task.id}/status`, { status: task.status })
+        .subscribe({
+          next: () => this.updateKanban(),
+          error: () => {
+            transferArrayItem(
+              event.container.data,
+              event.previousContainer.data,
+              event.currentIndex,
+              event.previousIndex
+            );
+            task.status = oldStatus;
+            alert('Failed to update task status. Please try again.');
+          },
+        });
     }
   }
 }

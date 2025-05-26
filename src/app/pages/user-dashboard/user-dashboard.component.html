@@ -91,15 +91,16 @@
                                 <span class="h-2 w-2 rounded-full mr-2" [ngClass]="status.color"></span>
                                 {{ status.label }}
                             </div>
-                            <div class="min-h-[50px] space-y-2">
+                            <div class="min-h-[50px] space-y-2" cdkDropList [id]="status.id" [cdkDropListData]="kanban[status.id]" [cdkDropListConnectedTo]="connectedDropLists"
+                                (cdkDropListDropped)="drop($event)">
                                 <ng-container *ngIf="kanban[status.id]?.length; else noTasks">
-                                    <div *ngFor="let task of kanban[status.id]"
-                                        class="bg-white rounded-lg p-3 shadow-sm border border-neutral-200 hover:shadow-md transition-shadow">
-                                        <div class="font-medium text-neutral-800">{{ task.title }}</div>
-                                        <div class="text-neutral-500 text-sm">{{ task.description }}</div>
-                                        <div class="text-xs text-neutral-500 mt-1">Due: {{ task.due_date || 'N/A' }}</div>
-                                        <div class="text-xs text-neutral-500">Project: {{ getProjectName(task.project_id) }}</div>
-                                    </div>
+                                <div *ngFor="let task of kanban[status.id]" cdkDrag
+                                    class="bg-white rounded-lg p-3 shadow-sm border border-neutral-200 hover:shadow-md transition-shadow cursor-move">
+                                    <div class="font-medium text-neutral-800">{{ task.title }}</div>
+                                    <div class="text-neutral-500 text-sm">{{ task.description }}</div>
+                                    <div class="text-xs text-neutral-500 mt-1">Due: {{ task.due_date || 'N/A' }}</div>
+                                    <div class="text-xs text-neutral-500">Project: {{ getProjectName(task.project_id) }}</div>
+                                </div>
                                 </ng-container>
                                 <ng-template #noTasks>
                                     <div class="text-xs text-neutral-400">No tasks</div>
