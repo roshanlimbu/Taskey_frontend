@@ -9,6 +9,8 @@ import {
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
+import { AutoScrollDirective } from '../../directives/auto-scroll.directive';
+
 interface User {
   id: number;
   github_id: string;
@@ -18,7 +20,7 @@ interface User {
 
 @Component({
   selector: 'app-project',
-  imports: [CommonModule, DragDropModule, FormsModule],
+  imports: [CommonModule, DragDropModule, FormsModule, AutoScrollDirective],
   templateUrl: './project.component.html',
   styleUrl: './project.component.scss',
   standalone: true,
@@ -45,6 +47,7 @@ export class ProjectComponent {
   editTaskTitle: string = '';
   editTaskDescription: string = '';
   deletingTask: any = null;
+  dragging = false;
 
   statuses = [
     { id: 'pending', label: 'Pending', color: 'bg-gray-500' },
@@ -145,27 +148,33 @@ export class ProjectComponent {
         event.currentIndex
       );
     } else {
+      const task = event.previousContainer.data[event.previousIndex];
+      const oldStatus = task.status;
+      task.status = event.container.id;
+
+      // Move in UI immediately
       transferArrayItem(
         event.previousContainer.data,
         event.container.data,
         event.previousIndex,
         event.currentIndex
       );
-      // Update task status in backend
-      const task = event.container.data[event.currentIndex];
-      const newStatus = event.container.id;
-      const payload = {
-        status: newStatus,
-      };
-      this.apiService.put(`sadmin/tasks/${task.id}/status`, payload).subscribe({
-        next: () => {
-          this.fetchProjectDetails(this.projectId!);
-        },
-        error: () => {
-          alert('Failed to update task status');
-          this.fetchProjectDetails(this.projectId!);
-        },
-      });
+
+      // Optimistically update backend
+      this.apiService
+        .put(`sadmin/tasks/${task.id}/status`, { status: task.status })
+        .subscribe({
+          error: () => {
+            transferArrayItem(
+              event.container.data,
+              event.previousContainer.data,
+              event.currentIndex,
+              event.previousIndex
+            );
+            task.status = oldStatus;
+            alert('Failed to update task status. Please try again.');
+          },
+        });
     }
   }
 
@@ -286,8 +295,15 @@ export class ProjectComponent {
       });
   }
 
-  startDeleteTask(task: any) {
-    this.deletingTask = task;
+  deleteTask(task: any) {
+    this.apiService.delete(`sadmin/tasks/${task.id}`).subscribe({
+      next: (res: any) => {
+        console.log(res);
+      },
+      error: () => {
+        alert('Failed to delete task.');
+      },
+    });
   }
 
   confirmDeleteTask() {
