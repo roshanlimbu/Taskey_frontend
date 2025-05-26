@@ -49,7 +49,7 @@ export class ProjectComponent {
   editTaskDescription: string = '';
   deletingTask: any = null;
   dragging = false;
-
+  editTaskDueDate: string = '';
   statuses = [
     { id: 'pending', label: 'Pending', color: 'bg-gray-500' },
     { id: 'ready_to_start', label: 'Ready to Start', color: 'bg-blue-400' },
@@ -277,6 +277,7 @@ export class ProjectComponent {
     this.editingTask = task;
     this.editTaskTitle = task.title;
     this.editTaskDescription = task.description;
+    this.editTaskDueDate = task.due_date;
   }
 
   submitEditTask() {
@@ -284,6 +285,7 @@ export class ProjectComponent {
     const payload = {
       title: this.editTaskTitle,
       description: this.editTaskDescription,
+      due_date: this.editTaskDueDate,
     };
     this.apiService
       .put(`sadmin/tasks/${this.editingTask.id}`, payload)
