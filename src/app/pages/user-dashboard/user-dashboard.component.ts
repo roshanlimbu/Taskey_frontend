@@ -13,6 +13,7 @@ export class UserDashboardComponent implements OnInit {
   user: any;
   showProfileDropdown = false;
   dashboardData: any;
+  selectedProjectId: number | null = null;
   statuses = [
     { id: 'pending', label: 'Pending', color: 'bg-gray-500' },
     { id: 'ready_to_start', label: 'Ready to Start', color: 'bg-blue-400' },
@@ -43,23 +44,33 @@ export class UserDashboardComponent implements OnInit {
     this.apiService.get('user/dashboard').subscribe({
       next: (res: any) => {
         this.dashboardData = res;
-        const userId = this.user?.id;
-        console.log('hhhh', userId);
-        console.log('dashboardData', this.dashboardData);
-        const userTasks = (this.dashboardData?.tasks || []).filter(
-          (task: any) => task.assigned_to == userId
-        );
-        this.kanban = {
-          todo: userTasks.filter((t: any) => t.status === 'todo'),
-          inprogress: userTasks.filter((t: any) => t.status === 'inprogress'),
-          done: userTasks.filter((t: any) => t.status === 'done'),
-          blocked: userTasks.filter((t: any) => t.status === 'blocked'),
-        };
+        if (this.dashboardData?.projects?.length) {
+          this.selectedProjectId = this.dashboardData.projects[0].id;
+        }
+        this.updateKanban();
       },
       error: (err) => {
         console.error('Error fetching user dashboard data', err);
       },
     });
+  }
+
+  selectProject(projectId: number) {
+    this.selectedProjectId = projectId;
+    this.updateKanban();
+  }
+
+  updateKanban() {
+    if (!this.dashboardData?.tasks) return;
+    const projectTasks = this.dashboardData.tasks.filter((task: any) =>
+      this.selectedProjectId ? task.project_id == this.selectedProjectId : true
+    );
+    this.kanban = {};
+    for (const status of this.statuses) {
+      this.kanban[status.id] = projectTasks.filter(
+        (t: any) => t.status === status.id
+      );
+    }
   }
 
   showProfile() {
@@ -68,7 +79,6 @@ export class UserDashboardComponent implements OnInit {
   }
 
   logout() {
-    // Implement logout logic here
     localStorage.removeItem('user');
     window.location.href = '/';
   }

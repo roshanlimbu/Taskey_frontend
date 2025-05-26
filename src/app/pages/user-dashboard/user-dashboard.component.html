@@ -71,7 +71,8 @@
         <ul class="space-y-3">
             <li *ngIf="!dashboardData?.projects?.length" class="text-neutral-400 text-sm">No projects found.</li>
             <li *ngFor="let project of dashboardData?.projects" class="">
-                <div class="px-3 py-2  rounded-lg bg-neutral-700 cursor-pointer border border-transparent transition hover:bg-neutral-600">
+                <div class="px-3 py-2 rounded-lg bg-neutral-700 cursor-pointer border border-transparent transition hover:bg-neutral-600"
+                    [ngClass]="{ 'ring-2 ring-primary-400': selectedProjectId === project.id }" (click)="selectProject(project.id)">
                     <div class="text-white font-semibold">{{ project.name }}</div>
                     <div class="text-neutral-300 text-xs mb-1">{{ project.description || 'No description' }}</div>
                     <div class="text-neutral-400 text-xs">Due: {{ project.due_date || 'N/A' }}</div>
