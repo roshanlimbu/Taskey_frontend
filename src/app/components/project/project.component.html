@@ -21,6 +21,10 @@
           <div class="text-xs">Due: {{ prj.due_date || "N/A" }}</div>
         </div>
       </li>
+    <button class="w-full py-2 px-4 cursor-pointer rounded-lg bg-neutral-200 text-neutral-700 font-semibold hover:bg-neutral-300 transition"
+        (click)="openNewProjectForm()">
+        Add New Project
+    </button>
     </ul>
   </aside>
   <!-- Main Content: Kanban and Members -->
@@ -488,4 +492,45 @@
       </div>
     </form>
   </div>
+</div>
+
+<div *ngIf="showNewProjectForm" class="fixed inset-0 z-50 flex items-center justify-center glass-overlay">
+    <div class="glass-modal p-6 w-full max-w-md relative">
+        <h2 class="text-xl font-bold mb-4">Create New Project</h2>
+        <form [formGroup]="projectForm" (ngSubmit)="submitNewProject()">
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">Project Name</label>
+                <input type="text" formControlName="name"
+                    class="w-full border border-neutral-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    [class.border-red-500]="
+            projectForm.get('name')?.invalid && projectForm.get('name')?.touched
+          " />
+                <div *ngIf="
+            projectForm.get('name')?.invalid && projectForm.get('name')?.touched
+          " class="text-red-500 text-xs mt-1">
+                    Project name is required.
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-sm font-medium mb-1">Description</label>
+                <textarea formControlName="description" rows="3"
+                    class="w-full border border-neutral-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"></textarea>
+            </div>
+            <div class="flex justify-end gap-2 mt-6">
+                <button type="button" class="px-4 py-2 rounded bg-neutral-200 text-neutral-700 hover:bg-neutral-300" (click)="closeNewProjectForm()"
+                    [disabled]="isSubmitting">
+                    Cancel
+                </button>
+                <button type="submit" class="px-4 py-2 rounded bgprimary text-white hover:bg-primary-600"
+                    [disabled]="isSubmitting || projectForm.invalid">
+                    <span *ngIf="!isSubmitting">Create</span>
+                    <span *ngIf="isSubmitting">Creating...</span>
+                </button>
+            </div>
+        </form>
+        <button class="absolute top-2 right-2 text-neutral-400 hover:text-neutral-600 text-xl" (click)="closeNewProjectForm()"
+            [disabled]="isSubmitting">
+            &times;
+        </button>
+    </div>
 </div>
