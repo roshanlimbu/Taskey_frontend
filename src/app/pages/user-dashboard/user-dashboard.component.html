@@ -1,1 +1,61 @@
-<p>user-dashboard works!</p>
+<div
+  class="w-full max-w-full bg-neutral-50 p-1 sm:p-2 md:p-3 font-sans mx-auto"
+>
+  <div
+    class="flex sm:flex-row sm:items-center justify-between gap-2 mb-2 items-center"
+  >
+    <!-- Left: Heading -->
+    <h1 class="text-lg font-bold font-title text-neutral-800">
+      Taskey Dashboard
+    </h1>
+
+    <!-- Right: Search Icon, Notification, Profile -->
+    <div class="flex items-center gap-4">
+      <!-- Search Icon Only -->
+      <div class="relative">
+        <span
+          class="material-symbols-outlined p-2 bg-white rounded-full border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors duration-300"
+          >search</span
+        >
+      </div>
+      <!-- Notification Icon -->
+      <div class="relative">
+        <span
+          class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full transform translate-x-1 -translate-y-1"
+        ></span>
+        <span
+          class="material-symbols-outlined p-2 bg-white rounded-full border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors duration-300"
+          >notifications</span
+        >
+      </div>
+      <!-- User Profile -->
+      <div class="relative flex-shrink-0">
+        <img
+          src="{{
+            user?.profile_image ||
+              'https://images.unsplash.com/photo-1511367461989-f85a21fda167?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxfHxwcm9maWxlfGVufDB8fHx8MTc0NjM5OTk0NHww&ixlib=rb-4.0.3&q=80&w=1080'
+          }}"
+          alt="User profile"
+          class="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full border-2 border-primary-500 cursor-pointer hover:scale-105 transition-transform duration-300 object-cover"
+          (click)="showProfileDropdown = !showProfileDropdown"
+          tabindex="0"
+        />
+        <div
+          *ngIf="showProfileDropdown"
+          class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-10 transition-all duration-300"
+        >
+          <a
+            (click)="showProfile()"
+            class="block px-4 py-2 hover:bg-neutral-100 cursor-pointer"
+            >My Profile</a
+          >
+          <a
+            (click)="logout()"
+            class="block px-4 py-2 hover:bg-neutral-100 text-red-500 cursor-pointer"
+            >Logout</a
+          >
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
