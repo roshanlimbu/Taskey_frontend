@@ -50,6 +50,11 @@ export class ProjectComponent {
   deletingTask: any = null;
   dragging = false;
   editTaskDueDate: string = '';
+  kanban: { [key: string]: any[] } = {};
+
+  projects: any[] = [];
+  selectedProjectId: number | null = null;
+
   statuses = [
     { id: 'pending', label: 'Pending', color: 'bg-gray-500' },
     { id: 'ready_to_start', label: 'Ready to Start', color: 'bg-blue-400' },
@@ -78,7 +83,7 @@ export class ProjectComponent {
   constructor(
     private route: ActivatedRoute,
     private apiService: ApiService,
-    public dragState: DragStateService
+    public dragState: DragStateService,
   ) {
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
@@ -97,6 +102,17 @@ export class ProjectComponent {
         console.error('Failed to load users:', err);
       },
     });
+    this.apiService.get('sadmin/projects').subscribe({
+      next: (res: any) => {
+        this.projects = res.projects || [];
+        // if (!this.selectedProjectId && this.projectId) {
+        //   this.selectedProjectId = this.projectId;
+        // }
+      },
+      error: (err) => {
+        console.error('Failed to load projects:', err);
+      },
+    });
   }
 
   fetchProjectDetails(id: number) {
@@ -105,10 +121,10 @@ export class ProjectComponent {
     this.apiService.get(`sadmin/projects/${id}`).subscribe({
       next: (res: any) => {
         this.project = res.project || res.data || res;
-        this.project_lead_name = res.project_lead_name;
         this.tasks = res.tasks || this.project.tasks || [];
         this.members = res.members || this.project.members || [];
         this.isLoading = false;
+        this.updateKanban();
       },
       error: (err) => {
         this.error = 'Failed to load project details.';
@@ -149,7 +165,7 @@ export class ProjectComponent {
       moveItemInArray(
         event.container.data,
         event.previousIndex,
-        event.currentIndex
+        event.currentIndex,
       );
     } else {
       const task = event.previousContainer.data[event.previousIndex];
@@ -161,19 +177,19 @@ export class ProjectComponent {
         event.previousContainer.data,
         event.container.data,
         event.previousIndex,
-        event.currentIndex
+        event.currentIndex,
       );
 
       // Optimistically update backend
       this.apiService
-        .put(`sadmin/tasks/${task.id}/status`, { status: task.status })
+        .put(`tasks/${task.id}/status`, { status: task.status })
         .subscribe({
           error: () => {
             transferArrayItem(
               event.container.data,
               event.previousContainer.data,
               event.currentIndex,
-              event.previousIndex
+              event.previousIndex,
             );
             task.status = oldStatus;
             alert('Failed to update task status. Please try again.');
@@ -337,5 +353,31 @@ export class ProjectComponent {
       error: () => alert('Failed to assign user to task.'),
     });
     task.showAssignMenu = false;
+  }
+
+  updateKanban() {
+    if (!this.tasks) return;
+    const projectTasks = this.tasks.filter((task: any) =>
+      this.projectId ? task.project_id == this.projectId : true,
+    );
+    for (const status of this.statuses) {
+      if (!this.kanban[status.id]) this.kanban[status.id] = [];
+      this.kanban[status.id].splice(
+        0,
+        this.kanban[status.id].length,
+        ...projectTasks.filter((t: any) => t.status === status.id),
+      );
+    }
+  }
+
+  selectProject(projectId: number) {
+    this.selectedProjectId = projectId;
+    this.fetchProjectDetails(projectId);
+  }
+
+  getProjectName(projectId: number): string {
+    if (!this.projects?.length) return 'N/A';
+    const project = this.projects.find((p: any) => p.id === projectId);
+    return project ? project.name : 'N/A';
   }
 }
