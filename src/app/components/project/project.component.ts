@@ -83,7 +83,8 @@ export class ProjectComponent {
   ngOnInit() {
     this.apiService.get('sadmin/users').subscribe({
       next: (res: any) => {
-        this.allUsers = res.data || res;
+        this.allUsers = res.users;
+        // console.log(this.allUsers);
       },
       error: (err) => {
         console.error('Failed to load users:', err);
@@ -130,25 +131,6 @@ export class ProjectComponent {
           alert('Failed to add task.');
         },
       });
-  }
-
-  onAddMember() {
-    // Placeholder for add member logic
-    alert('Add Member clicked!');
-  }
-
-  // Stubs for future expansion
-  onEditTask(task: any) {
-    alert('Edit Task: ' + task.title);
-  }
-  onDeleteTask(task: any) {
-    alert('Delete Task: ' + task.title);
-  }
-  onAssignTask(task: any) {
-    alert('Assign Task: ' + task.title);
-  }
-  onUpdateTaskStatus(task: any) {
-    alert('Update Status: ' + task.title);
   }
 
   getTasks(status: string): any[] {
