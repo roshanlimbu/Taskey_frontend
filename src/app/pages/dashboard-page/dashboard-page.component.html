@@ -112,12 +112,14 @@
                 >group</span
               >
             </div>
-            <div class="text-3xl font-bold text-neutral-900">24</div>
-            <div class="flex items-center text-green-600 text-sm">
-              <span class="material-symbols-outlined text-base mr-1"
-                >arrow_upward</span
-              >
-              2 new this month
+            <div class="text-3xl font-bold text-neutral-900">
+              {{ totalMembers }}
+            </div>
+            <div class="flex items-center text-green-600">
+              <span class="material-symbols-outlined text-base mr-1">
+                arrow_upward
+              </span>
+              2 % from last week
             </div>
           </div>
 
@@ -132,12 +134,12 @@
                 >task_alt</span
               >
             </div>
-            <div class="text-3xl font-bold text-neutral-900">187</div>
-            <div class="flex items-center text-red-500 text-sm">
-              <span class="material-symbols-outlined text-base mr-1"
-                >arrow_downward</span
-              >
-              2% from last week
+            <div class="text-3xl font-bold text-neutral-900">
+              {{ getTotalCompletedTasks() }}
+            </div>
+            <div class="flex items-center text-yellow-600 text-sm">
+              <span class="material-symbols-outlined text-base mr-1">pending_actions</span>
+              {{ getTotalRemainingTasks() }} tasks remaining
             </div>
           </div>
         </div>
@@ -355,106 +357,28 @@
           </div>
         </div>
         <div class="space-y-4">
-          <div class="flex gap-4 py-3 border-b border-neutral-100">
+          <div *ngFor="let activity of activitiesService.activities" class="flex gap-4 py-3 border-b border-neutral-100">
             <div class="flex-shrink-0">
               <img
-                src="https://images.unsplash.com/photo-1521898284481-a5ec348cb555?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxNXx8dGVhbSUyMG1lbWJlcnxlbnwwfHx8fDE3NDY0MTQxNzh8MA&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
-                alt="Sarah Johnson"
+                [src]="activity.user.profile_image || 'default-avatar-url'"
+                alt="{{ activity.user.name }}"
                 class="w-10 h-10 rounded-full"
-                keywords="team member, avatar"
               />
             </div>
             <div>
               <div class="flex items-center gap-2">
-                <span class="font-medium">Sarah Johnson</span>
-                <span class="text-neutral-500 text-sm"
-                  >updated task status</span
-                >
-                <span
-                  class="font-medium text-primary-600 hover:underline cursor-pointer"
-                  >Homepage Redesign</span
-                >
+                <span class="font-medium">{{ activity.user.name }}</span>
+                <span class="text-neutral-500 text-sm">
+                  {{ activity.type === 'status_update' ? 'updated task status' : activity.type === 'new_task' ? 'created a new task' : 'commented on' }}
+                </span>
+                <span class="font-medium text-primary-600 hover:underline cursor-pointer">
+                  {{ activity.title }}
+                </span>
               </div>
-              <p class="text-sm text-neutral-600 mt-1">
-                Changed status from &quot;In Progress&quot; to &quot;Ready for
-                Review&quot;
-              </p>
-              <div
-                class="flex items-center gap-4 mt-2 text-xs text-neutral-500"
-              >
-                <span>Today at 10:23 AM</span>
-                <button
-                  class="text-neutral-600 hover:text-primary-600 transition-colors duration-300 flex items-center gap-1"
-                >
-                  <span class="material-symbols-outlined text-sm">comment</span>
-                  <span>Reply</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="flex gap-4 py-3 border-b border-neutral-100">
-            <div class="flex-shrink-0">
-              <img
-                src="https://images.unsplash.com/photo-1562788869-4ed32648eb72?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxfHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
-                alt="Michael Chen"
-                class="w-10 h-10 rounded-full"
-                keywords="team member, avatar"
-              />
-            </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="font-medium">Michael Chen</span>
-                <span class="text-neutral-500 text-sm">created a new task</span>
-                <span
-                  class="font-medium text-primary-600 hover:underline cursor-pointer"
-                  >Fix Navbar Responsiveness</span
-                >
-              </div>
-              <p class="text-sm text-neutral-600 mt-1">
-                Added a new task to the &quot;Mobile App Redesign&quot; project
-              </p>
-              <div
-                class="flex items-center gap-4 mt-2 text-xs text-neutral-500"
-              >
-                <span>Yesterday at 3:45 PM</span>
-                <button
-                  class="text-neutral-600 hover:text-primary-600 transition-colors duration-300 flex items-center gap-1"
-                >
-                  <span class="material-symbols-outlined text-sm">comment</span>
-                  <span>Reply</span>
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="flex gap-4 py-3 border-b border-neutral-100">
-            <div class="flex-shrink-0">
-              <img
-                src="https://images.unsplash.com/photo-1562788869-4ed32648eb72?crop=entropy&amp;cs=tinysrgb&amp;fit=max&amp;fm=jpg&amp;ixid=M3w3MzkyNDZ8MHwxfHNlYXJjaHwxfHx0ZWFtJTIwbWVtYmVyfGVufDB8fHx8MTc0NjQxNDE3OHww&amp;ixlib=rb-4.0.3&amp;q=80&amp;w=1080"
-                alt="Elena Rodriguez"
-                class="w-10 h-10 rounded-full"
-                keywords="team member, avatar"
-              />
-            </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="font-medium">Elena Rodriguez</span>
-                <span class="text-neutral-500 text-sm">commented on</span>
-                <span
-                  class="font-medium text-primary-600 hover:underline cursor-pointer"
-                  >API Integration Issue</span
-                >
-              </div>
-              <p class="text-sm text-neutral-600 mt-1">
-                Let&#x27;s schedule a call with the backend team to discuss this
-                issue further.
-              </p>
-              <div
-                class="flex items-center gap-4 mt-2 text-xs text-neutral-500"
-              >
-                <span>Oct 18, 2023 at 9:12 AM</span>
-                <button
-                  class="text-neutral-600 hover:text-primary-600 transition-colors duration-300 flex items-center gap-1"
-                >
+              <p class="text-sm text-neutral-600 mt-1">{{ activity.description }}</p>
+              <div class="flex items-center gap-4 mt-2 text-xs text-neutral-500">
+                <span>{{ activity.created_at | date:'medium' }}</span>
+                <button class="text-neutral-600 hover:text-primary-600 transition-colors duration-300 flex items-center gap-1">
                   <span class="material-symbols-outlined text-sm">comment</span>
                   <span>Reply</span>
                 </button>

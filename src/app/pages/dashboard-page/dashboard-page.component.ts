@@ -14,6 +14,7 @@ import { HostListener } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { differenceInCalendarDays } from 'date-fns';
+import { ActivitiesService } from '../../services/activities.service';
 
 interface Project {
   id: number;
@@ -23,6 +24,7 @@ interface Project {
   progress_percentage: number;
   total_tasks: number;
   completed_tasks: number;
+  members?: string;
 }
 
 @Component({
@@ -47,7 +49,6 @@ export class DashboardPageComponent implements OnInit {
   isSubmittingEdit = false;
   editProjectForm: FormGroup;
   editingProjectId: number | null = null;
-  totalProjects: number = 0;
   user: any;
   allUsers: any[] = [];
 
@@ -61,12 +62,21 @@ export class DashboardPageComponent implements OnInit {
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
 
+  // data for small cards
+  totalProjects: number = 0;
+  totalMembers: number = 0;
+  totalTasks: number = 0;
+  totalComments: number = 0;
+  totalStatusUpdates: number = 0;
+  totalNewTasks: number = 0;
+
   constructor(
     private router: Router,
     private authService: AuthService,
     private fb: FormBuilder,
     private apiService: ApiService,
-    private http: HttpClient
+    private http: HttpClient,
+    public activitiesService: ActivitiesService
   ) {
     this.repoForm = this.fb.group({
       name: ['', Validators.required],
@@ -87,10 +97,12 @@ export class DashboardPageComponent implements OnInit {
 
   ngOnInit() {
     this.user = JSON.parse(localStorage.getItem('user') || '{}');
+    this.activitiesService.fetchActivities();
 
     this.apiService.get('sadmin/users').subscribe({
       next: (res: any) => {
         this.allUsers = res.users;
+        this.totalMembers = this.allUsers.length;
         console.log(this.allUsers);
       },
       error: (err) => {
@@ -259,5 +271,19 @@ export class DashboardPageComponent implements OnInit {
       0
     );
     return Math.round(total / this.projects.length);
+  }
+  getTotalCompletedTasks(): number {
+    return this.projects.reduce(
+      (sum, project) => sum + (project.completed_tasks || 0),
+      0
+    );
+  }
+
+  getTotalRemainingTasks(): number {
+    return this.projects.reduce((sum, project) => {
+      const total = project.total_tasks || 0;
+      const completed = project.completed_tasks || 0;
+      return sum + (total - completed);
+    }, 0);
   }
 }
