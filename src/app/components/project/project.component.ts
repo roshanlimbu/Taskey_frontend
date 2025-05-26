@@ -8,7 +8,13 @@ import {
   moveItemInArray,
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
-import { FormsModule } from '@angular/forms';
+import {
+  FormsModule,
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  Validators,
+} from '@angular/forms';
 import { AutoScrollDirective } from '../../directives/auto-scroll.directive';
 import { DragStateService } from '../../services/drag-state.service';
 
@@ -21,7 +27,13 @@ interface User {
 
 @Component({
   selector: 'app-project',
-  imports: [CommonModule, DragDropModule, FormsModule, AutoScrollDirective],
+  imports: [
+    CommonModule,
+    DragDropModule,
+    FormsModule,
+    ReactiveFormsModule,
+    AutoScrollDirective,
+  ],
   templateUrl: './project.component.html',
   styleUrl: './project.component.scss',
   standalone: true,
@@ -76,6 +88,10 @@ export class ProjectComponent {
     },
   ];
 
+  showNewProjectForm = false;
+  isSubmitting = false;
+  projectForm: FormGroup;
+
   get connectedDropLists() {
     return this.statuses.map((s) => s.id);
   }
@@ -84,6 +100,7 @@ export class ProjectComponent {
     private route: ActivatedRoute,
     private apiService: ApiService,
     public dragState: DragStateService,
+    private fb: FormBuilder
   ) {
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
@@ -91,6 +108,10 @@ export class ProjectComponent {
       if (this.projectId) {
         this.fetchProjectDetails(this.projectId);
       }
+    });
+    this.projectForm = this.fb.group({
+      name: ['', Validators.required],
+      description: [''],
     });
   }
   ngOnInit() {
@@ -165,7 +186,7 @@ export class ProjectComponent {
       moveItemInArray(
         event.container.data,
         event.previousIndex,
-        event.currentIndex,
+        event.currentIndex
       );
     } else {
       const task = event.previousContainer.data[event.previousIndex];
@@ -177,7 +198,7 @@ export class ProjectComponent {
         event.previousContainer.data,
         event.container.data,
         event.previousIndex,
-        event.currentIndex,
+        event.currentIndex
       );
 
       // Optimistically update backend
@@ -189,7 +210,7 @@ export class ProjectComponent {
               event.container.data,
               event.previousContainer.data,
               event.currentIndex,
-              event.previousIndex,
+              event.previousIndex
             );
             task.status = oldStatus;
             alert('Failed to update task status. Please try again.');
@@ -358,14 +379,14 @@ export class ProjectComponent {
   updateKanban() {
     if (!this.tasks) return;
     const projectTasks = this.tasks.filter((task: any) =>
-      this.projectId ? task.project_id == this.projectId : true,
+      this.projectId ? task.project_id == this.projectId : true
     );
     for (const status of this.statuses) {
       if (!this.kanban[status.id]) this.kanban[status.id] = [];
       this.kanban[status.id].splice(
         0,
         this.kanban[status.id].length,
-        ...projectTasks.filter((t: any) => t.status === status.id),
+        ...projectTasks.filter((t: any) => t.status === status.id)
       );
     }
   }
@@ -379,5 +400,36 @@ export class ProjectComponent {
     if (!this.projects?.length) return 'N/A';
     const project = this.projects.find((p: any) => p.id === projectId);
     return project ? project.name : 'N/A';
+  }
+
+  openNewProjectForm() {
+    this.showNewProjectForm = true;
+    this.projectForm.reset();
+  }
+
+  closeNewProjectForm() {
+    this.showNewProjectForm = false;
+    this.isSubmitting = false;
+  }
+
+  submitNewProject() {
+    if (this.projectForm.invalid) return;
+    this.isSubmitting = true;
+    const payload = this.projectForm.value;
+    this.apiService.post('sadmin/projects', payload).subscribe({
+      next: (res: any) => {
+        this.isSubmitting = false;
+        this.closeNewProjectForm();
+        this.apiService.get('sadmin/projects').subscribe({
+          next: (res: any) => {
+            this.projects = res.projects || [];
+          },
+        });
+      },
+      error: () => {
+        this.isSubmitting = false;
+        alert('Failed to create project.');
+      },
+    });
   }
 }
