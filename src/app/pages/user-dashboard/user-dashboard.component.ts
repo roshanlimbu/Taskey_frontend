@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { ApiService } from '../../services/api.service';
 
 @Component({
   selector: 'app-user-dashboard',
@@ -11,10 +12,23 @@ import { Router } from '@angular/router';
 export class UserDashboardComponent implements OnInit {
   user: any;
   showProfileDropdown = false;
-  constructor(private router: Router) {}
+  dashboardData: any;
+  constructor(
+    private router: Router,
+    private apiService: ApiService,
+  ) {}
 
   ngOnInit() {
     this.user = JSON.parse(localStorage.getItem('user') || '{}');
+    this.apiService.get('user/dashboard').subscribe({
+      next: (res: any) => {
+        this.dashboardData = res;
+        console.log('hhh', this.dashboardData);
+      },
+      error: (err) => {
+        console.error('Error fetching user dashboard data', err);
+      },
+    });
   }
 
   showProfile() {
