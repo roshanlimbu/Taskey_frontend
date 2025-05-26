@@ -6,13 +6,19 @@
   >
     <!-- Left: Heading -->
     <h1 class="text-lg font-bold font-title text-neutral-800">
-      Taskey Dashboard
+    Taskey
     </h1>
 
-    <!-- Right: Search Icon, Notification, Profile -->
+    <!-- Right: Search, Notification, Profile -->
     <div class="flex items-center gap-4">
-      <!-- Search Icon Only -->
-      <div class="relative">
+    <!-- Search Bar (desktop) -->
+    <div class="relative hidden sm:block">
+        <span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-neutral-400">search</span>
+        <input type="text" placeholder="Search projects, members..."
+            class="pl-10 pr-4 py-2 rounded-full border border-neutral-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-300 w-64" />
+    </div>
+    <!-- Search Icon (mobile) -->
+    <div class="relative sm:hidden">
         <span
           class="material-symbols-outlined p-2 bg-white rounded-full border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors duration-300"
           >search</span
