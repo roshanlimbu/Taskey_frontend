@@ -252,6 +252,8 @@
                     <div
                       *ngFor="let task of getTasks(status.id)"
                       cdkDrag
+                      (cdkDragStarted)="dragState.setDragging(true)"
+                      (cdkDragEnded)="dragState.setDragging(false)"
                       class="bg-white rounded-lg p-3 shadow-sm border border-neutral-200 cursor-move hover:shadow-md transition-shadow task-card"
                     >
                       <div class="font-medium text-neutral-800">

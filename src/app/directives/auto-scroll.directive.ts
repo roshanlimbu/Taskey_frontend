@@ -5,6 +5,7 @@ import {
   Input,
   OnDestroy,
 } from '@angular/core';
+import { DragStateService } from '../services/drag-state.service';
 
 @Directive({
   selector: '[appAutoScroll]',
@@ -14,25 +15,12 @@ export class AutoScrollDirective implements OnDestroy {
   @Input() edgeThreshold = 60; // px from edge to start scrolling
 
   private intervalId: any = null;
-  private static dragging = false;
 
-  constructor(private el: ElementRef) {
-    // Listen for cdk drag events globally
-    document.addEventListener('cdkDragStarted', this.onDragStarted, true);
-    document.addEventListener('cdkDragEnded', this.onDragEnded, true);
-  }
-
-  private onDragStarted = () => {
-    AutoScrollDirective.dragging = true;
-  };
-  private onDragEnded = () => {
-    AutoScrollDirective.dragging = false;
-    this.clearScroll();
-  };
+  constructor(private el: ElementRef, private dragState: DragStateService) {}
 
   @HostListener('document:mousemove', ['$event'])
   onMouseMove(event: MouseEvent) {
-    if (!AutoScrollDirective.dragging) {
+    if (!this.dragState.dragging) {
       this.clearScroll();
       return;
     }
@@ -82,7 +70,5 @@ export class AutoScrollDirective implements OnDestroy {
 
   ngOnDestroy() {
     this.clearScroll();
-    document.removeEventListener('cdkDragStarted', this.onDragStarted, true);
-    document.removeEventListener('cdkDragEnded', this.onDragEnded, true);
   }
 }

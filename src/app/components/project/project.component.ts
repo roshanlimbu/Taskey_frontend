@@ -10,6 +10,7 @@ import {
 } from '@angular/cdk/drag-drop';
 import { FormsModule } from '@angular/forms';
 import { AutoScrollDirective } from '../../directives/auto-scroll.directive';
+import { DragStateService } from '../../services/drag-state.service';
 
 interface User {
   id: number;
@@ -74,7 +75,11 @@ export class ProjectComponent {
     return this.statuses.map((s) => s.id);
   }
 
-  constructor(private route: ActivatedRoute, private apiService: ApiService) {
+  constructor(
+    private route: ActivatedRoute,
+    private apiService: ApiService,
+    public dragState: DragStateService
+  ) {
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
       this.projectId = id ? +id : null;
