@@ -31,11 +31,14 @@ export const routes: Routes = [
       ),
   },
 
-
   {
     path: 'admin',
     loadChildren: () =>
       import('./routes/project-admin.routes').then((m) => m.routes),
+  },
+  {
+    path: 'user',
+    loadChildren: () => import('./routes/user.routes').then((m) => m.routes),
   },
 
   {
