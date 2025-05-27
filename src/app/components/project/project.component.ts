@@ -17,6 +17,7 @@ import {
 } from '@angular/forms';
 import { AutoScrollDirective } from '../../directives/auto-scroll.directive';
 import { DragStateService } from '../../services/drag-state.service';
+import { NotificationService } from '../../services/notification.service';
 
 interface User {
   id: number;
@@ -100,7 +101,8 @@ export class ProjectComponent {
     private route: ActivatedRoute,
     private apiService: ApiService,
     public dragState: DragStateService,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private notificationService: NotificationService,
   ) {
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
@@ -186,7 +188,7 @@ export class ProjectComponent {
       moveItemInArray(
         event.container.data,
         event.previousIndex,
-        event.currentIndex
+        event.currentIndex,
       );
     } else {
       const task = event.previousContainer.data[event.previousIndex];
@@ -198,7 +200,7 @@ export class ProjectComponent {
         event.previousContainer.data,
         event.container.data,
         event.previousIndex,
-        event.currentIndex
+        event.currentIndex,
       );
 
       // Optimistically update backend
@@ -210,7 +212,7 @@ export class ProjectComponent {
               event.container.data,
               event.previousContainer.data,
               event.currentIndex,
-              event.previousIndex
+              event.previousIndex,
             );
             task.status = oldStatus;
             alert('Failed to update task status. Please try again.');
@@ -253,6 +255,8 @@ export class ProjectComponent {
           this.showAddMember = false;
           this.newMember = '';
           this.showMemberSuccessToast = true;
+          this.notificationService.requestPermissionAndGetToken();
+          this.notificationService.listenForMessages();
           setTimeout(() => (this.showMemberSuccessToast = false), 2000);
         },
         error: () => {
@@ -370,7 +374,23 @@ export class ProjectComponent {
     if (!task || !task.id || !member || !member.id) return;
     const payload = { user_id: member.id };
     this.apiService.post(`sadmin/tasks/${task.id}/assign`, payload).subscribe({
-      next: () => this.fetchProjectDetails(this.projectId!),
+      next: () => {
+        this.fetchProjectDetails(this.projectId!);
+        this.apiService
+          .post('send-notification', {
+            user_id: member.id,
+            title: 'Task Assigned',
+            body: `You have been assigned to task: ${task.title}`,
+          })
+          .subscribe({
+            next: () => {
+              console.log('Notification sent successfully');
+            },
+            error: () => {
+              console.error('Failed to send notification');
+            },
+          });
+      },
       error: () => alert('Failed to assign user to task.'),
     });
     task.showAssignMenu = false;
@@ -379,14 +399,14 @@ export class ProjectComponent {
   updateKanban() {
     if (!this.tasks) return;
     const projectTasks = this.tasks.filter((task: any) =>
-      this.projectId ? task.project_id == this.projectId : true
+      this.projectId ? task.project_id == this.projectId : true,
     );
     for (const status of this.statuses) {
       if (!this.kanban[status.id]) this.kanban[status.id] = [];
       this.kanban[status.id].splice(
         0,
         this.kanban[status.id].length,
-        ...projectTasks.filter((t: any) => t.status === status.id)
+        ...projectTasks.filter((t: any) => t.status === status.id),
       );
     }
   }
