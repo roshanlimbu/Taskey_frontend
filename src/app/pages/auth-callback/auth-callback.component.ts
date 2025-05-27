@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
+import { ApiService } from '../../services/api.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -25,11 +27,12 @@ export class AuthCallbackComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private authService: AuthService,
+    private notificationService: NotificationService,
+    private apiService: ApiService,
     private router: Router,
   ) {}
 
   ngOnInit() {
-    // Check URL for errors first
     if (window.location.href.includes('error=')) {
       const errorMessage = 'GitHub authentication failed. Please try again.';
       this.router.navigate(['/error'], {
@@ -38,20 +41,29 @@ export class AuthCallbackComponent implements OnInit {
       return;
     }
 
-    // Process token from the redirect
     this.route.queryParams.subscribe((params) => {
       console.log('Callback query params:', params);
 
-      // Standard token handling after backend redirect
       if (params['token'] && params['user']) {
         try {
-          // Store the token
+          // store the token
           this.authService.setToken(params['token']);
 
-          // Parse and store user info if needed
+          // parse and store user info if needed
           const user = JSON.parse(decodeURIComponent(params['user']));
           console.log('User info:', user);
           localStorage.setItem('user', JSON.stringify(user));
+
+          // request FCM token and send to backend
+          this.notificationService
+            .requestPermissionAndGetToken()
+            .then((token) => {
+              if (token) {
+                this.apiService
+                  .post('save-fcm-token', { token: token, id: user.id })
+                  .subscribe();
+              }
+            });
 
           switch (user.role) {
             case 1:
@@ -76,7 +88,6 @@ export class AuthCallbackComponent implements OnInit {
           });
         }
       } else if (params['error']) {
-        // Handle specific GitHub OAuth error
         console.error('GitHub OAuth error:', params['error']);
         this.router.navigate(['/error'], {
           queryParams: {
