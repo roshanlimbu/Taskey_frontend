@@ -40,6 +40,7 @@ export class ApiService {
 
   private getHttpOptions(): { headers: HttpHeaders } {
     const token = this.authService.getToken();
+    console.log('tokenlhhhhh', token);
     let headers = new HttpHeaders({
       'Content-Type': 'application/json',
     });

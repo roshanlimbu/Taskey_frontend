@@ -1,21 +1,14 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
 import { initializeApp } from 'firebase/app';
-import {
-  getMessaging,
-  getToken,
-  onMessage,
-  Messaging,
-} from 'firebase/messaging';
+import { getMessaging, getToken, onMessage } from 'firebase/messaging';
+import { ApiService } from './api.service';
+import { CustomNotificationService } from './custom-notification.service';
+import { BehaviorSubject, firstValueFrom, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class NotificationService {
-  private messaging: Messaging | null = null;
-  private tokenSubject = new BehaviorSubject<string | null>(null);
-  public currentMessage = new BehaviorSubject<any>(null);
-
   firebaseConfig = {
     apiKey: 'AIzaSyCk2LEXYTNhgrZiY3KXlsjylZdDD1KA13k',
     authDomain: 'tsky-28991.firebaseapp.com',
@@ -28,45 +21,62 @@ export class NotificationService {
       'BPkplQGD-komTJjC4mNImzb8PH8xhtd29_DYSLpqqu93r8MIzNkRJf8eYRYaZi4K_FTWiDaZ0HtiNGFr_y_hPr0',
   };
 
-  constructor() {
-    this.initFirebase();
+  app: any;
+  messaging: any;
+  private _token: string = '';
+  private tokenPromise: Promise<string> | null = null;
+  private listenerInitialized = false;
+  private tokenSubject = new BehaviorSubject<string | null>(null);
+
+  constructor(
+    private api: ApiService,
+    private customNotificationService: CustomNotificationService
+  ) {
+    this.app = initializeApp(this.firebaseConfig);
+    this.messaging = getMessaging(this.app);
   }
 
-  private initFirebase() {
-    const app = initializeApp(this.firebaseConfig);
-    this.messaging = getMessaging(app);
-  }
-
-  // request permission and get FCM token
-  async requestPermissionAndGetToken(): Promise<string | null> {
-    if (!this.messaging) return null;
+  async requestPermission(): Promise<void> {
     try {
-      const token = await getToken(this.messaging, {
-        vapidKey: this.firebaseConfig.vapidKey,
-      });
-      this.tokenSubject.next(token);
-      return token;
+      const permission = await Notification.requestPermission();
+      if (permission === 'granted') {
+        const token = await getToken(this.messaging, {
+          vapidKey: this.firebaseConfig.vapidKey,
+        });
+        if (token) {
+          console.log('FCM Token:', token);
+          this.tokenSubject.next(token);
+          // Send token to Laravel backend
+          const payload = { fcm_token: token };
+          this.api.post('subscribe', payload).subscribe({
+            next: () => {
+              console.log('Token sent to backend successfully');
+            },
+            error: (err: any) => {
+              console.error('Error sending token to backend:', err);
+            },
+          });
+        } else {
+          console.log('No registration token available.');
+        }
+      } else {
+        console.error('Notification permission not granted.');
+      }
     } catch (err) {
-      this.tokenSubject.next(null);
-      return null;
+      console.error('An error occurred while retrieving token. ', err);
     }
   }
 
-  // listen for foreground messages
-  listenForMessages() {
-    if (!this.messaging) return;
-    onMessage(this.messaging, (payload) => {
-      this.currentMessage.next(payload);
+  // receive incoming message
+  receiveMessage(): Observable<any> {
+    return new Observable((observer) => {
+      onMessage(this.messaging, (payload) => {
+        observer.next(payload);
+      });
     });
   }
-
-  // observable for token
-  getTokenObservable() {
+  // get current token
+  getToken(): Observable<string | null> {
     return this.tokenSubject.asObservable();
-  }
-
-  // observable for messages
-  getMessageObservable() {
-    return this.currentMessage.asObservable();
   }
 }
