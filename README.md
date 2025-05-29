@@ -53,5 +53,11 @@ Taskey Frontend is a modern web application built with Angular, serving as the u
 - **End-to-end tests:**
   (Configure your preferred e2e framework)
 
+## Screenshots
+
+Here is a preview of the Taskey frontend UI:
+
+![Taskey Kanban and Dashboard](public/assets/image.png)
+
 ## License
 This project is open-sourced under the MIT license.
