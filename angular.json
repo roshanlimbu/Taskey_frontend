@@ -29,7 +29,12 @@
               {
                 "glob": "**/*",
                 "input": "public"
-              }
+              },
+              {
+                "glob": "firebase-messaging-sw.js",
+                "input": "src/app"
+              },
+              "src/app/firebase-messaging-sw.js"
             ],
             "styles": [
               "src/styles.scss"

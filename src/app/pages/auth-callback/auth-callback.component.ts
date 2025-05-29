@@ -54,17 +54,7 @@ export class AuthCallbackComponent implements OnInit {
           console.log('User info:', user);
           localStorage.setItem('user', JSON.stringify(user));
 
-          // request FCM token and send to backend
-          this.notificationService
-            .requestPermissionAndGetToken()
-            .then((token) => {
-              if (token) {
-                this.apiService
-                  .post('save-fcm-token', { token: token, id: user.id })
-                  .subscribe();
-              }
-            });
-
+          this.notificationService.requestPermission();
           switch (user.role) {
             case 1:
               this.router.navigate(['/dashboard']);
