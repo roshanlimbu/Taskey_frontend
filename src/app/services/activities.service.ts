@@ -21,4 +21,15 @@ export class ActivitiesService {
       },
     });
   }
+
+  fetchAllActivities() {
+    this.apiService.get('activities/all').subscribe({
+      next: (res: any) => {
+        this.activities = res.activities;
+      },
+      error: (err) => {
+        console.error('Error fetching activities', err);
+      },
+    });
+  }
 }
