@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 import { FormsModule } from '@angular/forms';
@@ -46,11 +46,15 @@ export class UserDashboardComponent implements OnInit {
   kanban: { [key: string]: any[] } = {};
   showNotificationToast = false;
   notificationToastMessage = '';
+  showNotificationDropdown = false;
+  notifications: any[] = [];
+  notificationFilter: 'all' | 'unread' | 'read' = 'all';
 
   constructor(
     private router: Router,
     private apiService: ApiService,
-    private notificationService: NotificationService
+    private notificationService: NotificationService,
+    private eRef: ElementRef
   ) {}
 
   ngOnInit() {
@@ -179,5 +183,68 @@ export class UserDashboardComponent implements OnInit {
           },
         });
     }
+  }
+
+  toggleNotificationDropdown() {
+    this.showNotificationDropdown = !this.showNotificationDropdown;
+    if (this.showNotificationDropdown) {
+      this.fetchNotifications();
+    }
+  }
+
+  fetchNotifications() {
+    this.apiService.get('notifications').subscribe({
+      next: (res: any) => {
+        this.notifications = res.data || [];
+      },
+      error: (err) => {
+        console.error('Error fetching notifications', err);
+        this.notifications = [];
+      },
+    });
+  }
+
+  @HostListener('document:click', ['$event'])
+  onClickOutside(event: MouseEvent) {
+    if (
+      this.showNotificationDropdown &&
+      !this.eRef.nativeElement.contains(event.target)
+    ) {
+      this.showNotificationDropdown = false;
+    }
+  }
+
+  markAsRead(notif: any) {
+    if (notif.read === 1) return;
+    this.apiService
+      .post(`notifications/${notif.id}/read`, { read: 1 })
+      .subscribe({
+        next: () => {
+          notif.read = 1;
+        },
+        error: (err) => {
+          console.error('Failed to mark notification as read', err);
+        },
+      });
+  }
+
+  deleteNotification(notif: any) {
+    this.apiService.delete(`notifications/${notif.id}`).subscribe({
+      next: () => {
+        this.notifications = this.notifications.filter(
+          (n) => n.id !== notif.id
+        );
+      },
+      error: (err) => {
+        console.error('Failed to delete notification', err);
+      },
+    });
+  }
+
+  get unreadNotificationsExists(): boolean {
+    return (
+      Array.isArray(this.notifications) &&
+      this.notifications.some((n) => n.read === 0)
+    );
   }
 }

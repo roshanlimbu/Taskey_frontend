@@ -33,11 +33,46 @@
       <div class="relative">
         <span
           class="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full transform translate-x-1 -translate-y-1"
+          *ngIf="unreadNotificationsExists"
         ></span>
         <span
           class="material-symbols-outlined p-2 bg-white rounded-full border border-neutral-200 cursor-pointer hover:bg-neutral-100 transition-colors duration-300"
-          >notifications</span
+          (click)="toggleNotificationDropdown()"
+          tabindex="0"
+        >notifications</span>
+        <!-- Notification Dropdown -->
+        <div
+          *ngIf="showNotificationDropdown"
+          class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-lg py-2 z-20 transition-all duration-300 max-h-96 overflow-y-auto"
         >
+          <div class="flex justify-between items-center px-4 pb-2">
+            <span class="font-semibold">Notifications</span>
+          </div>
+          <div *ngIf="!notifications.length" class="px-4 py-2 text-neutral-400 text-sm">
+            No notifications.
+          </div>
+          <div *ngFor="let notif of notifications" class="px-4 py-2 border-b last:border-b-0 hover:bg-neutral-100 cursor-pointer">
+            <div class="font-medium text-neutral-800">{{ notif.title || 'Notification' }}</div>
+            <div class="text-neutral-500 text-sm">{{ notif.body || notif.message }}</div>
+            <div class="text-xs text-neutral-400 mt-1">{{ notif.created_at | date:'short' }}</div>
+            <div class="flex gap-2 mt-2">
+              <button
+                class="text-xs px-2 py-1 rounded"
+                [ngClass]="notif.read == 1 ? 'bg-green-200 text-green-900 cursor-default' : 'bg-green-100 text-green-700 hover:bg-green-200'"
+                (click)="markAsRead(notif)"
+                [disabled]="notif.read == 1"
+              >
+                {{ notif.read == 1 ? 'Read' : 'Mark as Read' }}
+              </button>
+              <button
+                class="text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200"
+                (click)="deleteNotification(notif)"
+              >
+                Delete
+                </button>
+                </div>
+                </div>
+                </div>
       </div>
       <!-- User Profile -->
       <div class="relative flex-shrink-0">
