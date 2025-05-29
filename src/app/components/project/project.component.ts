@@ -18,6 +18,7 @@ import {
 import { AutoScrollDirective } from '../../directives/auto-scroll.directive';
 import { DragStateService } from '../../services/drag-state.service';
 import { NotificationService } from '../../services/notification.service';
+import { HttpClient } from '@angular/common/http';
 
 interface User {
   id: number;
@@ -100,6 +101,7 @@ export class ProjectComponent {
   constructor(
     private route: ActivatedRoute,
     private apiService: ApiService,
+    private http: HttpClient,
     public dragState: DragStateService,
     private fb: FormBuilder,
     private notificationService: NotificationService,
@@ -255,8 +257,6 @@ export class ProjectComponent {
           this.showAddMember = false;
           this.newMember = '';
           this.showMemberSuccessToast = true;
-          this.notificationService.requestPermissionAndGetToken();
-          this.notificationService.listenForMessages();
           setTimeout(() => (this.showMemberSuccessToast = false), 2000);
         },
         error: () => {
