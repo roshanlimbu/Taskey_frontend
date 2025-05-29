@@ -9,6 +9,7 @@ import {
   moveItemInArray,
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
+import { NotificationService } from '../../services/notification.service';
 
 @Component({
   selector: 'app-user-dashboard',
@@ -43,10 +44,13 @@ export class UserDashboardComponent implements OnInit {
   ];
 
   kanban: { [key: string]: any[] } = {};
+  showNotificationToast = false;
+  notificationToastMessage = '';
 
   constructor(
     private router: Router,
     private apiService: ApiService,
+    private notificationService: NotificationService
   ) {}
 
   ngOnInit() {
@@ -63,6 +67,16 @@ export class UserDashboardComponent implements OnInit {
         console.error('Error fetching user dashboard data', err);
       },
     });
+
+    this.notificationService.receiveMessage().subscribe((message) => {
+      console.log('new message received.', message);
+      this.notificationToastMessage =
+        message.notification?.body || 'New notification!';
+      this.showNotificationToast = true;
+      setTimeout(() => {
+        this.showNotificationToast = false;
+      }, 3000);
+    });
   }
 
   selectProject(projectId: number) {
@@ -73,12 +87,12 @@ export class UserDashboardComponent implements OnInit {
   updateKanban() {
     if (!this.dashboardData?.tasks) return;
     const projectTasks = this.dashboardData.tasks.filter((task: any) =>
-      this.selectedProjectId ? task.project_id == this.selectedProjectId : true,
+      this.selectedProjectId ? task.project_id == this.selectedProjectId : true
     );
     this.kanban = {};
     for (const status of this.statuses) {
       this.kanban[status.id] = projectTasks.filter(
-        (t: any) => t.status === status.id,
+        (t: any) => t.status === status.id
       );
     }
   }
@@ -96,7 +110,7 @@ export class UserDashboardComponent implements OnInit {
   getProjectName(projectId: number): string {
     if (!this.dashboardData?.projects) return 'N/A';
     const project = this.dashboardData.projects.find(
-      (p: any) => p.id === projectId,
+      (p: any) => p.id === projectId
     );
     return project ? project.name : 'N/A';
   }
@@ -137,7 +151,7 @@ export class UserDashboardComponent implements OnInit {
       moveItemInArray(
         event.container.data,
         event.previousIndex,
-        event.currentIndex,
+        event.currentIndex
       );
     } else {
       const task = event.previousContainer.data[event.previousIndex];
@@ -147,7 +161,7 @@ export class UserDashboardComponent implements OnInit {
         event.previousContainer.data,
         event.container.data,
         event.previousIndex,
-        event.currentIndex,
+        event.currentIndex
       );
       this.apiService
         .put(`tasks/${task.id}/status`, { status: task.status })
@@ -158,7 +172,7 @@ export class UserDashboardComponent implements OnInit {
               event.container.data,
               event.previousContainer.data,
               event.currentIndex,
-              event.previousIndex,
+              event.previousIndex
             );
             task.status = oldStatus;
             alert('Failed to update task status. Please try again.');
