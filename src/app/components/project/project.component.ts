@@ -17,8 +17,6 @@ import {
 } from '@angular/forms';
 import { AutoScrollDirective } from '../../directives/auto-scroll.directive';
 import { DragStateService } from '../../services/drag-state.service';
-import { NotificationService } from '../../services/notification.service';
-import { HttpClient } from '@angular/common/http';
 
 interface User {
   id: number;
@@ -101,10 +99,8 @@ export class ProjectComponent {
   constructor(
     private route: ActivatedRoute,
     private apiService: ApiService,
-    private http: HttpClient,
     public dragState: DragStateService,
-    private fb: FormBuilder,
-    private notificationService: NotificationService,
+    private fb: FormBuilder
   ) {
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
@@ -190,7 +186,7 @@ export class ProjectComponent {
       moveItemInArray(
         event.container.data,
         event.previousIndex,
-        event.currentIndex,
+        event.currentIndex
       );
     } else {
       const task = event.previousContainer.data[event.previousIndex];
@@ -202,7 +198,7 @@ export class ProjectComponent {
         event.previousContainer.data,
         event.container.data,
         event.previousIndex,
-        event.currentIndex,
+        event.currentIndex
       );
 
       // Optimistically update backend
@@ -214,7 +210,7 @@ export class ProjectComponent {
               event.container.data,
               event.previousContainer.data,
               event.currentIndex,
-              event.previousIndex,
+              event.previousIndex
             );
             task.status = oldStatus;
             alert('Failed to update task status. Please try again.');
@@ -292,6 +288,17 @@ export class ProjectComponent {
       .subscribe({
         next: () => {
           this.fetchProjectDetails(this.projectId!);
+          this.apiService
+            .post('send-notification', {
+              user_id: member.id,
+              title: 'Project Lead Assigned',
+              body: `You have been assigned as the lead for project: ${this.project.name}`,
+            })
+            .subscribe({
+              next: () => {
+                console.log('Notification sent successfully');
+              },
+            });
         },
         error: () => {
           alert('Failed to assign lead.');
@@ -399,14 +406,14 @@ export class ProjectComponent {
   updateKanban() {
     if (!this.tasks) return;
     const projectTasks = this.tasks.filter((task: any) =>
-      this.projectId ? task.project_id == this.projectId : true,
+      this.projectId ? task.project_id == this.projectId : true
     );
     for (const status of this.statuses) {
       if (!this.kanban[status.id]) this.kanban[status.id] = [];
       this.kanban[status.id].splice(
         0,
         this.kanban[status.id].length,
-        ...projectTasks.filter((t: any) => t.status === status.id),
+        ...projectTasks.filter((t: any) => t.status === status.id)
       );
     }
   }
