@@ -12,9 +12,8 @@ import { CommonModule } from '@angular/common';
 import { ApiService } from '../../services/api.service';
 import { HostListener } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
-import { differenceInCalendarDays } from 'date-fns';
 import { ActivitiesService } from '../../services/activities.service';
+import { ActivitiesComponent } from '../../components/activities/activities.component';
 
 interface Project {
   id: number;
@@ -30,7 +29,13 @@ interface Project {
 @Component({
   selector: 'app-dashboard-page',
   templateUrl: './dashboard-page.component.html',
-  imports: [FormsModule, CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [
+    FormsModule,
+    CommonModule,
+    ReactiveFormsModule,
+    RouterModule,
+    ActivitiesComponent,
+  ],
   styleUrls: ['./dashboard-page.component.scss'],
 })
 export class DashboardPageComponent implements OnInit {
@@ -75,7 +80,6 @@ export class DashboardPageComponent implements OnInit {
     private authService: AuthService,
     private fb: FormBuilder,
     private apiService: ApiService,
-    private http: HttpClient,
     public activitiesService: ActivitiesService,
   ) {
     this.repoForm = this.fb.group({
@@ -285,9 +289,5 @@ export class DashboardPageComponent implements OnInit {
       const completed = project.completed_tasks || 0;
       return sum + (total - completed);
     }, 0);
-  }
-
-  viewAllActivity() {
-    this.activitiesService.fetchAllActivities();
   }
 }
