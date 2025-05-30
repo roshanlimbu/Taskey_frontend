@@ -1,0 +1,72 @@
+<div class="flex flex-col sm:flex-row justify-between items-center mb-3 sm:mb-4 gap-2 sm:gap-0">
+  <h2 class="text-lg font-bold text-neutral-800">Project Activity</h2>
+  <div class="flex gap-2 w-full overflow-x-auto pb-2 sm:pb-0 sm:w-auto sm:overflow-visible">
+    <button class="px-3 py-1.5 text-sm bg-primary-500 text-white rounded hover:bg-primary-600 transition-colors duration-300">
+      All
+    </button>
+    <button class="px-3 py-1.5 text-sm bg-white border border-neutral-200 rounded hover:bg-neutral-50 transition-colors duration-300">
+      Issues
+    </button>
+    <button class="px-3 py-1.5 text-sm bg-white border border-neutral-200 rounded hover:bg-neutral-50 transition-colors duration-300">
+      Comments
+    </button>
+  </div>
+</div>
+<div class="space-y-4">
+  <div *ngFor="let activity of activitiesService.activities" class="flex gap-4 py-3 border-b border-neutral-100">
+    <div class="flex-shrink-0">
+      <img [src]="activity.user.profile_image || 'default-avatar-url'" alt="{{ activity.user.name }}" class="w-10 h-10 rounded-full" />
+    </div>
+    <div>
+      <div class="flex items-center gap-2">
+        <span class="font-medium">{{ activity.user.name }}</span>
+        <span class="text-neutral-500 text-sm">
+          {{
+          activity.type === "status_update"
+          ? "updated task status"
+          : activity.type === "new_task"
+          ? "created a new task"
+          : "commented on"
+          }}
+        </span>
+        <span class="font-medium text-primary-600 hover:underline cursor-pointer">
+          {{ activity.title }}
+        </span>
+      </div>
+      <p class="text-sm text-neutral-600 mt-1">
+        {{ activity.description }}
+      </p>
+      <div class="flex items-center gap-4 mt-2 text-xs text-neutral-500">
+        <span>{{ activity.created_at | date: "medium" }}</span>
+        <button class="text-neutral-600 hover:text-primary-600 transition-colors duration-300 flex items-center gap-1"
+          (click)="toggleCommentSection(activity.id)">
+          <span class="material-symbols-outlined text-sm">comment</span>
+          <span>Comment</span>
+        </button>
+      </div>
+      <!-- Show comments and input only if this activity's comment section is open -->
+      <div *ngIf="openCommentActivityId === activity.id" class="mt-2">
+        <!-- List of comments -->
+        <div *ngIf="activity.comments && activity.comments.length > 0" class="mb-2 space-y-1">
+          <div *ngFor="let comment of activity.comments" class="text-xs text-neutral-700 bg-neutral-100 rounded px-2 py-1">
+            <span class="font-medium">{{ comment.user?.name || 'User' }}:</span> {{ comment.text || comment.comment }}
+          </div>
+        </div>
+        <!-- Comment input UI -->
+        <div class="flex gap-2 items-center">
+          <input type="text" class="border rounded px-2 py-1 text-sm flex-1" placeholder="Add a comment..."
+            [(ngModel)]="commentInputs[activity.id]" />
+          <button class="bgprimary text-white  px-3 py-1 rounded  text-sm" (click)="submitComment(activity)">
+            Post
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="mt-4 text-center">
+  <button class="bgprimary px-4 py-2 rounded-xl text-white font-medium flex items-center gap-1 mx-auto cursor-pointer" (click)="viewAllActivity()">
+    <span>View all activity</span>
+    <span class="material-symbols-outlined text-sm">arrow_forward</span>
+  </button>
+</div>
