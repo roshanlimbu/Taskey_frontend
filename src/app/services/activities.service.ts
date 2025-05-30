@@ -32,4 +32,11 @@ export class ActivitiesService {
       },
     });
   }
+
+  commentOnActivity(activityId: string, comment: string) {
+    return this.apiService.post('activities/comment', {
+      activity_id: activityId,
+      comment: comment,
+    });
+  }
 }
