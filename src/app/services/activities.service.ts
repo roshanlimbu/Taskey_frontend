@@ -14,7 +14,10 @@ export class ActivitiesService {
   fetchActivities() {
     this.apiService.get('activities/recent').subscribe({
       next: (res: any) => {
-        this.activities = res.activities;
+        this.activities = res.activities.map((activity: any) => ({
+          ...activity,
+          comments: this.parseComments(activity.comments),
+        }));
       },
       error: (err) => {
         console.error('Error fetching activities', err);
@@ -38,5 +41,16 @@ export class ActivitiesService {
       activity_id: activityId,
       comment: comment,
     });
+  }
+  parseComments(comments: any) {
+    if (!comments) return [];
+    try {
+      const parsedComments = JSON.parse(comments);
+      if (Array.isArray(parsedComments)) return parsedComments;
+      return [parsedComments];
+    } catch (err) {
+      console.error('Error parsing comments', err);
+      return [];
+    }
   }
 }

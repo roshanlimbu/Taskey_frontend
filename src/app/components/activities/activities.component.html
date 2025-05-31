@@ -47,15 +47,18 @@
       <!-- Show comments and input only if this activity's comment section is open -->
       <div *ngIf="openCommentActivityId === activity.id" class="mt-2">
         <!-- List of comments -->
-        <div *ngIf="activity.comments && activity.comments.length > 0" class="mb-2 space-y-1">
-          <div *ngFor="let comment of activity.comments" class="text-xs text-neutral-700 bg-neutral-100 rounded px-2 py-1">
-            <span class="font-medium">{{ comment.user?.name || 'User' }}:</span> {{ comment.text || comment.comment }}
+        <div *ngIf="activity.comments && activity.comments.length > 0" class="mb-2 space-y-2">
+          <div *ngFor="let comment of activity.comments" class="bg-neutral-50 border border-neutral-200 rounded p-3 flex flex-col shadow-sm">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="font-semibold text-primary-700 text-sm">{{ comment.user?.name || 'User' }}</span>
+              <span class="text-xs text-neutral-400">• {{ comment.created_at | date: 'short' }}</span>
+            </div>
+            <div class="text-sm text-neutral-800">{{ comment.text || comment.comment }}</div>
           </div>
         </div>
         <!-- Comment input UI -->
         <div class="flex gap-2 items-center">
-          <input type="text" class="border rounded px-2 py-1 text-sm flex-1" placeholder="Add a comment..."
-            [(ngModel)]="commentInputs[activity.id]" />
+          <input type="text" class="border rounded px-2 py-1 text-sm flex-1" placeholder="Add a comment..." [(ngModel)]="commentInputs[activity.id]" />
           <button class="bgprimary text-white  px-3 py-1 rounded  text-sm" (click)="submitComment(activity)">
             Post
           </button>
