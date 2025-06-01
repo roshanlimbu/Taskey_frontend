@@ -59,5 +59,11 @@ Here is a preview of the Taskey frontend UI:
 
 ![Taskey Kanban and Dashboard](public/assets/image.png)
 
+## OpenAI Project Report Generation
+
+You can now generate detailed project reports directly from the project dashboard. When you click the "Generate Report" button, the frontend calls the backend, which uses OpenAI GPT-4 to create a report based on the project and its tasks. The result is shown in an alert (or can be improved to show in a modal).
+
+No manual prompt writing is needed—the backend handles all prompt construction.
+
 ## License
 This project is open-sourced under the MIT license.
