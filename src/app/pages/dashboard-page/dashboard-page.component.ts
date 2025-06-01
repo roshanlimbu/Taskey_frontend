@@ -197,7 +197,7 @@ export class DashboardPageComponent implements OnInit {
     this.apiService
       .put(
         `sadmin/projects/${this.editingProjectId}`,
-        this.editProjectForm.value,
+        this.editProjectForm.value
       )
       .subscribe({
         next: (res: any) => {
@@ -272,14 +272,14 @@ export class DashboardPageComponent implements OnInit {
     if (!this.projects.length) return 0;
     const total = this.projects.reduce(
       (sum, p) => sum + (p.progress_percentage || 0),
-      0,
+      0
     );
     return Math.round(total / this.projects.length);
   }
   getTotalCompletedTasks(): number {
     return this.projects.reduce(
       (sum, project) => sum + (project.completed_tasks || 0),
-      0,
+      0
     );
   }
 
