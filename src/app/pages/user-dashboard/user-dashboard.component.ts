@@ -56,7 +56,7 @@ export class UserDashboardComponent implements OnInit {
     private router: Router,
     private apiService: ApiService,
     private notificationService: NotificationService,
-    private eRef: ElementRef
+    private eRef: ElementRef,
   ) {}
 
   ngOnInit() {
@@ -93,12 +93,12 @@ export class UserDashboardComponent implements OnInit {
   updateKanban() {
     if (!this.dashboardData?.tasks) return;
     const projectTasks = this.dashboardData.tasks.filter((task: any) =>
-      this.selectedProjectId ? task.project_id == this.selectedProjectId : true
+      this.selectedProjectId ? task.project_id == this.selectedProjectId : true,
     );
     this.kanban = {};
     for (const status of this.statuses) {
       this.kanban[status.id] = projectTasks.filter(
-        (t: any) => t.status === status.id
+        (t: any) => t.status === status.id,
       );
     }
   }
@@ -116,7 +116,7 @@ export class UserDashboardComponent implements OnInit {
   getProjectName(projectId: number): string {
     if (!this.dashboardData?.projects) return 'N/A';
     const project = this.dashboardData.projects.find(
-      (p: any) => p.id === projectId
+      (p: any) => p.id === projectId,
     );
     return project ? project.name : 'N/A';
   }
@@ -157,7 +157,7 @@ export class UserDashboardComponent implements OnInit {
       moveItemInArray(
         event.container.data,
         event.previousIndex,
-        event.currentIndex
+        event.currentIndex,
       );
     } else {
       const task = event.previousContainer.data[event.previousIndex];
@@ -167,7 +167,7 @@ export class UserDashboardComponent implements OnInit {
         event.previousContainer.data,
         event.container.data,
         event.previousIndex,
-        event.currentIndex
+        event.currentIndex,
       );
       this.apiService
         .put(`tasks/${task.id}/status`, { status: task.status })
@@ -178,7 +178,7 @@ export class UserDashboardComponent implements OnInit {
               event.container.data,
               event.previousContainer.data,
               event.currentIndex,
-              event.previousIndex
+              event.previousIndex,
             );
             task.status = oldStatus;
             alert('Failed to update task status. Please try again.');
@@ -235,7 +235,7 @@ export class UserDashboardComponent implements OnInit {
     this.apiService.delete(`notifications/${notif.id}`).subscribe({
       next: () => {
         this.notifications = this.notifications.filter(
-          (n) => n.id !== notif.id
+          (n) => n.id !== notif.id,
         );
       },
       error: (err) => {
