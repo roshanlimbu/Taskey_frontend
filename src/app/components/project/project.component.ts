@@ -17,6 +17,7 @@ import {
 } from '@angular/forms';
 import { AutoScrollDirective } from '../../directives/auto-scroll.directive';
 import { DragStateService } from '../../services/drag-state.service';
+import { OpenAiService } from '../../services/open-ai.service';
 
 interface User {
   id: number;
@@ -101,6 +102,7 @@ export class ProjectComponent {
     private apiService: ApiService,
     public dragState: DragStateService,
     private fb: FormBuilder,
+    public openAiService: OpenAiService
   ) {
     this.route.paramMap.subscribe((params) => {
       const id = params.get('id');
@@ -186,7 +188,7 @@ export class ProjectComponent {
       moveItemInArray(
         event.container.data,
         event.previousIndex,
-        event.currentIndex,
+        event.currentIndex
       );
     } else {
       const task = event.previousContainer.data[event.previousIndex];
@@ -198,7 +200,7 @@ export class ProjectComponent {
         event.previousContainer.data,
         event.container.data,
         event.previousIndex,
-        event.currentIndex,
+        event.currentIndex
       );
 
       // Optimistically update backend
@@ -210,7 +212,7 @@ export class ProjectComponent {
               event.container.data,
               event.previousContainer.data,
               event.currentIndex,
-              event.previousIndex,
+              event.previousIndex
             );
             task.status = oldStatus;
             alert('Failed to update task status. Please try again.');
@@ -406,14 +408,14 @@ export class ProjectComponent {
   updateKanban() {
     if (!this.tasks) return;
     const projectTasks = this.tasks.filter((task: any) =>
-      this.projectId ? task.project_id == this.projectId : true,
+      this.projectId ? task.project_id == this.projectId : true
     );
     for (const status of this.statuses) {
       if (!this.kanban[status.id]) this.kanban[status.id] = [];
       this.kanban[status.id].splice(
         0,
         this.kanban[status.id].length,
-        ...projectTasks.filter((t: any) => t.status === status.id),
+        ...projectTasks.filter((t: any) => t.status === status.id)
       );
     }
   }
@@ -458,5 +460,28 @@ export class ProjectComponent {
         alert('Failed to create project.');
       },
     });
+  }
+
+  generateProjectReport() {
+    if (!this.project || !this.project.id) return;
+    this.openAiService
+      .generateReport(this.project.id, this.project.name)
+      .subscribe({
+        next: (res) => {
+          if (res.success) {
+            alert('Report generated!\n' + res.response);
+          } else {
+            alert(
+              'Failed to generate report: ' + (res.error || 'Unknown error')
+            );
+          }
+        },
+        error: (err) => {
+          alert(
+            'Error generating report: ' +
+              (err?.error?.error || err.message || 'Unknown error')
+          );
+        },
+      });
   }
 }
