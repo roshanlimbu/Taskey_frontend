@@ -14,10 +14,8 @@ export class ActivitiesService {
   fetchActivities() {
     this.apiService.get('activities/recent').subscribe({
       next: (res: any) => {
-        this.activities = res.activities.map((activity: any) => ({
-          ...activity,
-          comments: this.parseComments(activity.comments),
-        }));
+        console.log('Fetched activities:', res.activities);
+        this.activities = res.activities;
       },
       error: (err) => {
         console.error('Error fetching activities', err);
