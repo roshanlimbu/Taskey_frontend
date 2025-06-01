@@ -10,10 +10,11 @@ import {
   transferArrayItem,
 } from '@angular/cdk/drag-drop';
 import { NotificationService } from '../../services/notification.service';
+import { ChatComponent } from '../../components/chat/chat.component';
 
 @Component({
   selector: 'app-user-dashboard',
-  imports: [CommonModule, FormsModule, DragDropModule],
+  imports: [CommonModule, FormsModule, DragDropModule, ChatComponent],
   templateUrl: './user-dashboard.component.html',
   styleUrl: './user-dashboard.component.scss',
 })
@@ -49,6 +50,7 @@ export class UserDashboardComponent implements OnInit {
   showNotificationDropdown = false;
   notifications: any[] = [];
   notificationFilter: 'all' | 'unread' | 'read' = 'all';
+  chatTaskId: number | null = null;
 
   constructor(
     private router: Router,
@@ -212,6 +214,7 @@ export class UserDashboardComponent implements OnInit {
     ) {
       this.showNotificationDropdown = false;
     }
+    this.closeAllMenus();
   }
 
   markAsRead(notif: any) {
@@ -246,5 +249,44 @@ export class UserDashboardComponent implements OnInit {
       Array.isArray(this.notifications) &&
       this.notifications.some((n) => n.read === 0)
     );
+  }
+
+  closeAllMenus(exceptTask?: any) {
+    for (const status of this.statuses) {
+      if (!this.kanban[status.id]) continue;
+      for (const t of this.kanban[status.id]) {
+        if (t !== exceptTask) {
+          t.showMenu = false;
+        }
+      }
+    }
+  }
+
+  toggleTaskMenu(task: any, event: MouseEvent) {
+    event.stopPropagation();
+    this.closeAllMenus(task);
+    task.showMenu = !task.showMenu;
+  }
+
+  toggleNeedHelp(task: any) {
+    const updated = { need_help: !task.need_help };
+    this.apiService.put(`tasks/${task.id}/need-help`, updated).subscribe({
+      next: (res: any) => {
+        task.need_help = res.task.need_help;
+        task.showMenu = false;
+        this.updateKanban();
+      },
+      error: (err) => {
+        alert('Failed to update need help flag.');
+      },
+    });
+  }
+
+  openChat(taskId: number) {
+    this.chatTaskId = taskId;
+  }
+
+  closeChat() {
+    this.chatTaskId = null;
   }
 }
