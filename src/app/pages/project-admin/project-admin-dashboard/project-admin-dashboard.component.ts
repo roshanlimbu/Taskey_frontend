@@ -81,7 +81,7 @@ export class ProjectAdminDashboardComponent implements OnInit {
     if (this.selectedProjectId) {
       return this.tasks.filter(
         (task) =>
-          task.status === status && task.project_id === this.selectedProjectId,
+          task.status === status && task.project_id === this.selectedProjectId
       );
     }
     return this.tasks.filter((task) => task.status === status);
@@ -91,8 +91,6 @@ export class ProjectAdminDashboardComponent implements OnInit {
   }
   drop(event: any) {
     if (event.previousContainer === event.container) {
-      // moveItemInArray is from @angular/cdk/drag-drop
-      // Not needed for backend update, just UI
     } else {
       const task = event.previousContainer.data[event.previousIndex];
       const oldStatus = task.status;
@@ -106,10 +104,9 @@ export class ProjectAdminDashboardComponent implements OnInit {
   }
   openMemberMenu: number | null = null;
 
-  constructor(
-    private apiService: ApiService,
-    private router: Router,
-  ) {}
+  reportNotFound = false;
+
+  constructor(private apiService: ApiService, private router: Router) {}
   ngOnInit() {
     this.user = JSON.parse(localStorage.getItem('user') || '{}');
     this.apiService.get('padmin/dashboard').subscribe({

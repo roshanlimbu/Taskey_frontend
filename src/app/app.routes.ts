@@ -1,33 +1,34 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './auth.guard';
+import { ProjectReportPageComponent } from './pages/project-report-page/project-report-page.component';
 
 export const routes: Routes = [
   {
     path: 'login',
     loadComponent: () =>
       import('./pages/login-page/login-page.component').then(
-        (m) => m.LoginPageComponent,
+        (m) => m.LoginPageComponent
       ),
   },
   {
     path: 'login-callback',
     loadComponent: () =>
       import('./pages/auth-callback/auth-callback.component').then(
-        (m) => m.AuthCallbackComponent,
+        (m) => m.AuthCallbackComponent
       ),
   },
   {
     path: 'error',
     loadComponent: () =>
       import('./components/error/error.component').then(
-        (m) => m.ErrorComponent,
+        (m) => m.ErrorComponent
       ),
   },
   {
     path: 'dashboard',
     loadComponent: () =>
       import('./pages/dashboard-page/dashboard-page.component').then(
-        (m) => m.DashboardPageComponent,
+        (m) => m.DashboardPageComponent
       ),
   },
 
@@ -45,12 +46,19 @@ export const routes: Routes = [
     path: 'project/:id',
     loadComponent: () =>
       import('./components/project/project.component').then(
-        (m) => m.ProjectComponent,
+        (m) => m.ProjectComponent
       ),
   },
   {
     path: 'profile',
     loadChildren: () => import('./routes/profile.routes').then((m) => m.routes),
+  },
+  {
+    path: 'reports/:id',
+    loadComponent: () =>
+      import('./pages/project-report-page/project-report-page.component').then(
+        (m) => m.ProjectReportPageComponent
+      ),
   },
 
   { path: '', redirectTo: 'login', pathMatch: 'full' },

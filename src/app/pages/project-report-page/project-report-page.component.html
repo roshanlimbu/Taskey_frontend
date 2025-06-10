@@ -1,0 +1,25 @@
+<div class="min-h-screen bg-neutral-50 py-10 px-2 flex flex-col items-center">
+    <div class="w-full max-w-3xl bg-white rounded-2xl shadow-lg p-8">
+        <div *ngIf="loading" class="text-center text-lg text-neutral-500 py-20">Loading report...</div>
+        <div *ngIf="!loading && !reportNotFound">
+            <button class="mb-4 flex items-center gap-1 text-primary hover:underline" (click)="goBack()">
+                <span class="material-symbols-outlined text-base">arrow_back</span>
+                Back to Dashboard
+            </button>
+            <ng-container *ngIf="!reportNotFound">
+                <h1 class="text-3xl font-bold mb-2 text-primary capitalize">{{ reportTitle }}</h1>
+                <div class="h-1 w-16 bgprimary rounded mb-6"></div>
+                <div id="report-content" class="prose prose-neutral max-w-none mb-8" [innerHTML]="parsedReport"></div>
+                <div class="flex justify-end">
+                    <button
+                        class="bgprimary hover:bg-purple-500 transition px-6 py-2 rounded-lg text-white font-semibold flex items-center gap-2 shadow"
+                        (click)="downloadReportAsPDF()">
+                        <span class="material-symbols-outlined text-lg">download</span>
+                        Download PDF
+                    </button>
+                </div>
+            </ng-container>
+            <div *ngIf="reportNotFound" class="text-center text-lg text-red-500 py-20">No reports found for the specified project.</div>
+        </div>
+    </div>
+</div>

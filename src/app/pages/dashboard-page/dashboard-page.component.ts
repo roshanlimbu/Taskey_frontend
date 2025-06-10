@@ -14,6 +14,12 @@ import { HostListener } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { ActivitiesService } from '../../services/activities.service';
 import { ActivitiesComponent } from '../../components/activities/activities.component';
+import { ReportsService } from '../../services/reports.service';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
+import { marked } from 'marked';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface Project {
   id: number;
@@ -80,7 +86,7 @@ export class DashboardPageComponent implements OnInit {
     private authService: AuthService,
     private fb: FormBuilder,
     private apiService: ApiService,
-    public activitiesService: ActivitiesService,
+    public activitiesService: ActivitiesService
   ) {
     this.repoForm = this.fb.group({
       name: ['', Validators.required],
