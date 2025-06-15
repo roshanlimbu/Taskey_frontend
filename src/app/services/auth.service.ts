@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 export class AuthService {
   private apiUrl = 'http://localhost:8000';
   private tokenKey = 'auth_token';
+  private roleKey = 'user_role';
 
   constructor(
     private http: HttpClient,
@@ -33,8 +34,18 @@ export class AuthService {
     return !!this.getToken();
   }
 
+  setRole(role: number): void {
+    localStorage.setItem(this.roleKey, role.toString());
+  }
+
+  getRole(): number | null {
+    const role = localStorage.getItem(this.roleKey);
+    return role ? parseInt(role, 10) : null;
+  }
+
   logout(): void {
     localStorage.removeItem(this.tokenKey);
+    localStorage.removeItem(this.roleKey);
     this.router.navigate(['/']);
   }
 }
