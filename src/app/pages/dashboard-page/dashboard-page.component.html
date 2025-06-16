@@ -18,9 +18,10 @@
   >
     <div class="flex items-center justify-between mb-8">
       <!-- Left: Heading -->
-      <h1 class="text-3xl font-bold font-title text-neutral-800">
-        Taskey Dashboard
-      </h1>
+      <img [src]="'icons/icon.png'" style="height: 65px" />
+      <!-- <h1 class="text-3xl font-bold font-title text-neutral-800"> -->
+      <!--   Taskey Dashboard -->
+      <!-- </h1> -->
 
       <!-- Right: Search, Notification, Profile -->
       <div class="flex items-center gap-4">
@@ -217,7 +218,10 @@
                     >
                       Delete
                     </button>
-                    <button class="block w-full px-4 py-2 text-left hover:bg-neutral-100" [routerLink]="['/reports', project.id]">
+                    <button
+                      class="block w-full px-4 py-2 text-left hover:bg-neutral-100"
+                      [routerLink]="['/reports', project.id]"
+                    >
                       View Report
                     </button>
                   </div>
