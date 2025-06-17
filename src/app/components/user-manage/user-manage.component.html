@@ -1,0 +1,221 @@
+<div class="container mx-auto p-6">
+  <i class="fa fa-arrow-left" aria-hidden="true" (click)="goBack()"> Go Back</i>
+  <h1 class="text-2xl font-bold mb-6 text-gray-800">User Management</h1>
+
+  <!-- Users Table -->
+  <div class="overflow-x-auto shadow-md rounded-lg">
+    <table class="min-w-full bg-white border border-gray-200">
+      <thead class="bg-gray-100">
+        <tr>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+            ID
+          </th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+            Name
+          </th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+            Email
+          </th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+            Role
+          </th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+            Dev Role
+          </th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+            Verified
+          </th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+            Profile Image
+          </th>
+          <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">
+            Actions
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of allUsers" class="border-t hover:bg-gray-50">
+          <td class="px-4 py-3 text-sm text-gray-700">{{ user.id }}</td>
+          <td class="px-4 py-3 text-sm text-gray-700">{{ user.name }}</td>
+          <td class="px-4 py-3 text-sm text-gray-700">{{ user.email }}</td>
+          <td class="px-4 py-3 text-sm text-gray-700">
+            {{ getRoleLabel(user.role) }}
+          </td>
+          <td class="px-4 py-3 text-sm text-gray-700">{{ user.dev_role }}</td>
+          <td class="px-4 py-3 text-sm text-gray-700">
+            <span
+              class="px-2 py-1 rounded-full text-xs"
+              [ngClass]="
+                user.is_user_verified
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-red-100 text-red-800'
+              "
+            >
+              {{ user.is_user_verified ? "Yes" : "No" }}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-sm text-gray-700">
+            <img
+              [src]="user.profile_image"
+              alt="Profile"
+              class="w-10 h-10 rounded-full object-cover"
+            />
+          </td>
+          <td class="r">
+            <button
+              (click)="openEditModal(user)"
+              class="text-blue-600 hover:text-blue-800 mr-3 transition-colors"
+            >
+              Edit
+            </button>
+            <button
+              (click)="confirmDelete(user.id)"
+              class="text-red-600 hover:text-red-800 transition-colors"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Edit Modal -->
+  <div
+    *ngIf="isEditModalOpen"
+    class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50"
+  >
+    <div class="bg-white rounded-lg p-6 w-full max-w-md">
+      <h2 class="text-xl font-semibold mb-4 text-gray-800">Edit User</h2>
+      <form #editForm="ngForm" (ngSubmit)="updateUser()">
+        <div class="mb-4">
+          <label for="name" class="block text-sm font-medium text-gray-700"
+            >Name</label
+          >
+          <input
+            type="text"
+            id="name"
+            name="userName"
+            #userName="ngModel"
+            [(ngModel)]="selectedUser.name"
+            required
+            class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+            [ngClass]="{
+              'border-red-500':
+                userName.invalid && (userName.dirty || userName.touched),
+            }"
+          />
+          <div
+            *ngIf="userName.invalid && (userName.dirty || userName.touched)"
+            class="text-red-500 text-xs mt-1"
+          >
+            Name is required.
+          </div>
+        </div>
+        <div class="mb-4">
+          <label for="email" class="block text-sm font-medium text-gray-700"
+            >Email</label
+          >
+          <input
+            type="email"
+            id="email"
+            name="userEmail"
+            #userEmail="ngModel"
+            [(ngModel)]="selectedUser.email"
+            required
+            email
+            class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+            [ngClass]="{
+              'border-red-500':
+                userEmail.invalid && (userEmail.dirty || userEmail.touched),
+            }"
+          />
+          <div
+            *ngIf="userEmail.invalid && (userEmail.dirty || userEmail.touched)"
+            class="text-red-500 text-xs mt-1"
+          >
+            Valid email is required.
+          </div>
+        </div>
+        <div class="mb-4">
+          <label for="role" class="block text-sm font-medium text-gray-700"
+            >Role</label
+          >
+          <select
+            id="role"
+            name="userRole"
+            #userRole="ngModel"
+            [(ngModel)]="selectedUser.role"
+            required
+            class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <option [value]="1">SAdmin</option>
+            <option [value]="2">Project Manager</option>
+            <option [value]="3">User</option>
+          </select>
+          <div
+            *ngIf="userRole.invalid && (userRole.dirty || userRole.touched)"
+            class="text-red-500 text-xs mt-1"
+          >
+            Role is required.
+          </div>
+        </div>
+        <div class="mb-4">
+          <label for="dev_role" class="block text-sm font-medium text-gray-700"
+            >Dev Role</label
+          >
+          <input
+            type="text"
+            id="dev_role"
+            name="userDevRole"
+            #userDevRole="ngModel"
+            [(ngModel)]="selectedUser.dev_role"
+            required
+            class="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring-blue-500 focus:border-blue-500"
+            [ngClass]="{
+              'border-red-500':
+                userDevRole.invalid &&
+                (userDevRole.dirty || userDevRole.touched),
+            }"
+          />
+          <div
+            *ngIf="
+              userDevRole.invalid && (userDevRole.dirty || userDevRole.touched)
+            "
+            class="text-red-500 text-xs mt-1"
+          >
+            Dev Role is required.
+          </div>
+        </div>
+        <div class="mb-4">
+          <label for="is_user_verified" class="flex items-center">
+            <input
+              type="checkbox"
+              id="is_user_verified"
+              name="isUserVerified"
+              [(ngModel)]="selectedUser.is_user_verified"
+              class="mr-2 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span class="text-sm font-medium text-gray-700">Verified</span>
+          </label>
+        </div>
+        <div class="flex justify-end space-x-3">
+          <button
+            type="button"
+            (click)="closeEditModal()"
+            class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            [disabled]="editForm.invalid"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50"
+          >
+            Save
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
