@@ -14,12 +14,6 @@ import { HostListener } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { ActivitiesService } from '../../services/activities.service';
 import { ActivitiesComponent } from '../../components/activities/activities.component';
-import { ReportsService } from '../../services/reports.service';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { HttpClient } from '@angular/common/http';
-import { marked } from 'marked';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 interface Project {
   id: number;
@@ -61,6 +55,7 @@ export class DashboardPageComponent implements OnInit {
   editProjectForm: FormGroup;
   editingProjectId: number | null = null;
   user: any;
+  allVerifiedUsers: any[] = [];
   allUsers: any[] = [];
 
   showProfileDropdown = false;
@@ -86,7 +81,7 @@ export class DashboardPageComponent implements OnInit {
     private authService: AuthService,
     private fb: FormBuilder,
     private apiService: ApiService,
-    public activitiesService: ActivitiesService
+    public activitiesService: ActivitiesService,
   ) {
     this.repoForm = this.fb.group({
       name: ['', Validators.required],
@@ -109,11 +104,11 @@ export class DashboardPageComponent implements OnInit {
     this.user = JSON.parse(localStorage.getItem('user') || '{}');
     this.activitiesService.fetchActivities();
 
-    this.apiService.get('sadmin/users').subscribe({
+    this.apiService.get('sadmin/verifiedUsers').subscribe({
       next: (res: any) => {
-        this.allUsers = res.users;
-        this.totalMembers = this.allUsers.length;
-        console.log(this.allUsers);
+        this.allVerifiedUsers = res.users;
+        this.totalMembers = this.allVerifiedUsers.length;
+        console.log(this.allVerifiedUsers);
       },
       error: (err) => {
         console.error('Error fetching users:', err);
@@ -164,6 +159,10 @@ export class DashboardPageComponent implements OnInit {
     });
   }
 
+  showAllUser() {
+    this.router.navigate(['/manageUsers']);
+  }
+
   openContextMenu(event: MouseEvent, index: number) {
     event.stopPropagation();
     this.showContextMenu = true;
@@ -203,7 +202,7 @@ export class DashboardPageComponent implements OnInit {
     this.apiService
       .put(
         `sadmin/projects/${this.editingProjectId}`,
-        this.editProjectForm.value
+        this.editProjectForm.value,
       )
       .subscribe({
         next: (res: any) => {
@@ -278,14 +277,14 @@ export class DashboardPageComponent implements OnInit {
     if (!this.projects.length) return 0;
     const total = this.projects.reduce(
       (sum, p) => sum + (p.progress_percentage || 0),
-      0
+      0,
     );
     return Math.round(total / this.projects.length);
   }
   getTotalCompletedTasks(): number {
     return this.projects.reduce(
       (sum, project) => sum + (project.completed_tasks || 0),
-      0
+      0,
     );
   }
 

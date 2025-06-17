@@ -69,6 +69,11 @@
               >My Profile</a
             >
             <a
+              (click)="showAllUser()"
+              class="block px-4 py-2 hover:bg-neutral-100 cursor-pointer"
+              >Show all User</a
+            >
+            <a
               (click)="logout()"
               class="block px-4 py-2 hover:bg-neutral-100 text-red-500 cursor-pointer"
               >Logout</a
@@ -273,7 +278,7 @@
             </button>
           </div>
           <div class="space-y-4">
-            <div *ngFor="let user of allUsers">
+            <div *ngFor="let user of allVerifiedUsers">
               <div
                 class="flex items-center justify-between hover:bg-neutral-50 p-2 rounded-lg transition-colors duration-300 cursor-pointer"
               >
