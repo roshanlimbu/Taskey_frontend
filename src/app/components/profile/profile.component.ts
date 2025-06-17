@@ -18,7 +18,10 @@ export class ProfileComponent {
   successMsg = '';
   errorMsg = '';
 
-  constructor(private fb: FormBuilder, private apiService: ApiService) {
+  constructor(
+    private fb: FormBuilder,
+    private apiService: ApiService,
+  ) {
     this.profileForm = this.fb.group({
       dev_role: [''],
     });
