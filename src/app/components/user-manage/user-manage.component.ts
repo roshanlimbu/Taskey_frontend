@@ -69,7 +69,7 @@ export class UserManageComponent implements OnInit {
     };
 
     this.apiService
-      .put(`sadmin/users/${this.selectedUser.id}`, updatedUser)
+      .put(`sadmin/users/update/${this.selectedUser.id}`, updatedUser)
       .subscribe({
         next: () => {
           this.fetchUsers();
@@ -85,7 +85,7 @@ export class UserManageComponent implements OnInit {
 
   confirmDelete(userId: number) {
     if (confirm('Are you sure you want to delete this user?')) {
-      this.apiService.delete(`sadmin/users/${userId}`).subscribe({
+      this.apiService.delete(`sadmin/users/delete/${userId}`).subscribe({
         next: () => {
           this.fetchUsers();
           alert('User deleted successfully.');
