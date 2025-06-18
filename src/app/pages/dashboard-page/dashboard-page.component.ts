@@ -76,6 +76,12 @@ export class DashboardPageComponent implements OnInit {
   totalStatusUpdates: number = 0;
   totalNewTasks: number = 0;
 
+  showNotificationToast = false;
+  notificationToastMessage = '';
+  showNotificationDropdown = false;
+  notifications: any[] = [];
+  notificationFilter: 'all' | 'unread' | 'read' = 'all';
+
   constructor(
     private router: Router,
     private authService: AuthService,
@@ -294,5 +300,37 @@ export class DashboardPageComponent implements OnInit {
       const completed = project.completed_tasks || 0;
       return sum + (total - completed);
     }, 0);
+  }
+
+  toggleNotificationDropdown() {
+    this.showNotificationDropdown = !this.showNotificationDropdown;
+    if (this.showNotificationDropdown) {
+      this.fetchNotifications();
+    }
+  }
+
+  fetchNotifications() {
+    this.apiService.get('notifications').subscribe({
+      next: (res: any) => {
+        this.notifications = res.data || [];
+      },
+      error: (err) => {
+        console.error('Error fetching notifications', err);
+        this.notifications = [];
+      },
+    });
+  }
+
+  deleteNotification(notif: any) {
+    this.apiService.delete(`notifications/${notif.id}`).subscribe({
+      next: () => {
+        this.notifications = this.notifications.filter(
+          (n) => n.id !== notif.id,
+        );
+      },
+      error: (err) => {
+        console.error('Failed to delete notification', err);
+      },
+    });
   }
 }
