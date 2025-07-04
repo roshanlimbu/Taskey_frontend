@@ -74,6 +74,11 @@ export const routes: Routes = [
         (m) => m.ProjectReportPageComponent
       ),
   },
+  {
+    path: 'superadmin',
+    loadChildren: () =>
+      import('./routes/masterAdmin.routes').then((m) => m.routes),
+  },
 
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: '**', redirectTo: 'login' },
