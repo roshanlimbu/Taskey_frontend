@@ -56,34 +56,39 @@ export class AuthCallbackComponent implements OnInit {
 
           this.notificationService.requestPermission();
 
-          // Check if user has a company_id
-          if (
-            user.company_id === null ||
-            user.company_id === undefined ||
-            user.company_id === ''
-          ) {
-            // User is not associated with any company, redirect to company form
-            console.log(
-              'User has no company association, redirecting to company form'
-            );
-            this.router.navigate(['/company-form']);
-            return;
-          }
 
-          // Check if user is verified
-          if (user.is_user_verified === 0 || user.is_user_verified === false) {
-            // User is not verified, redirect to wait-verification page
-            console.log(
-              'User is not verified, redirecting to wait-verification'
-            );
-            this.router.navigate(['/user/wait-verification']);
-            return;
-          }
+          if (user.role !== 0) {
+            // Check if user has a company_id
+            if (
+              user.company_id === null ||
+              user.company_id === undefined ||
+              user.company_id === ''
+            ) {
+              // User is not associated with any company, redirect to company form
+              console.log(
+                'User has no company association, redirecting to company form'
+              );
+              this.router.navigate(['/company-form']);
+              return;
+            }
 
+            // Check if user is verified
+            if (
+              user.is_user_verified === 0 ||
+              user.is_user_verified === false
+            ) {
+              // User is not verified, redirect to wait-verification page
+              console.log(
+                'User is not verified, redirecting to wait-verification'
+              );
+              this.router.navigate(['/user/wait-verification']);
+              return;
+            }
+          }
           // User has a company and is verified, proceed with normal role-based navigation
           switch (user.role) {
             case 0:
-              this.router.navigate(['/super/dashboard']);
+              this.router.navigate(['/superadmin/dashboard']);
               break;
             case 1:
               this.router.navigate(['/dashboard']);
