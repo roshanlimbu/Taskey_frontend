@@ -111,6 +111,24 @@ export class ProjectComponent {
     return this.statuses.length > 0;
   }
 
+  private getDefaultStatusId(): string {
+    // Priority order for default status:
+    // 1. 'pending' if it exists
+    // 2. First status in the list
+    // 3. 'pending' as fallback
+
+    const pendingStatus = this.statuses.find((s) => s.id === 'pending');
+    if (pendingStatus) {
+      return 'pending';
+    }
+
+    if (this.statuses.length > 0) {
+      return this.statuses[0].id;
+    }
+
+    return 'pending'; // fallback
+  }
+
   constructor(
     private route: ActivatedRoute,
     private apiService: ApiService,
@@ -156,23 +174,14 @@ export class ProjectComponent {
   loadCustomStatuses() {
     this.apiService.get('sadmin/status').subscribe({
       next: (res: any) => {
-        this.statuses = res.statuses || [];
-        // Mark all loaded statuses as custom and convert hex colors to CSS classes if needed
-        this.statuses.forEach((status) => {
-          status.isCustom = true;
-          // If color is hex, convert to corresponding CSS class for UI display
-          if (status.color && status.color.startsWith('#')) {
-            const colorOption = this.colorOptions.find(
-              (option) => option.hex === status.color
-            );
-            if (colorOption) {
-              status.color = colorOption.class;
-            } else {
-              // Default to blue if hex doesn't match any predefined color
-              status.color = 'bg-blue-500';
-            }
-          }
-        });
+        this.statuses = (res.statuses || []).map((status: any) => ({
+          id: status.id.toString(), // Convert numeric ID to string for consistency
+          name: status.name,
+          color: this.convertHexToClass(status.color),
+          isCustom: true,
+          originalId: status.id, // Keep original numeric ID for backend operations
+        }));
+        console.log('Loaded statuses:', this.statuses);
       },
       error: (err) => {
         console.error('Failed to load custom statuses:', err);
@@ -183,6 +192,16 @@ export class ProjectComponent {
         }
       },
     });
+  }
+
+  private convertHexToClass(hexColor: string): string {
+    if (!hexColor || !hexColor.startsWith('#')) {
+      return 'bg-blue-500'; // default
+    }
+    const colorOption = this.colorOptions.find(
+      (option) => option.hex === hexColor
+    );
+    return colorOption ? colorOption.class : 'bg-blue-500';
   }
 
   saveCustomStatuses() {
@@ -231,10 +250,9 @@ export class ProjectComponent {
       // Save to database
       this.apiService.post('sadmin/status/create', newStatus).subscribe({
         next: (res: any) => {
-          // Store the CSS class locally for UI display
           const statusForUI = {
             ...newStatus,
-            color: this.newStatusColor, // Keep CSS class for local UI
+            color: this.newStatusColor,
           };
           this.statuses.push(statusForUI);
           this.saveCustomStatuses();
@@ -243,10 +261,9 @@ export class ProjectComponent {
         },
         error: (err) => {
           console.error('Failed to save custom status to database:', err);
-          // Fallback to localStorage with CSS class
           const statusForUI = {
             ...newStatus,
-            color: this.newStatusColor, // Keep CSS class for local UI
+            color: this.newStatusColor,
           };
           this.statuses.push(statusForUI);
           this.saveCustomStatuses();
@@ -308,11 +325,15 @@ export class ProjectComponent {
     this.error = null;
     this.apiService.get(`sadmin/projects/${id}`).subscribe({
       next: (res: any) => {
+        console.log('Project details response:', res);
         this.project = res.project || res.data || res;
         this.tasks = res.tasks || this.project.tasks || [];
         this.members = res.members || this.project.members || [];
+        console.log('Tasks loaded:', this.tasks);
+        console.log('Statuses available:', this.statuses);
         this.isLoading = false;
         this.updateKanban();
+        console.log('Kanban after update:', this.kanban);
       },
       error: (err) => {
         this.error = 'Failed to load project details.';
@@ -325,12 +346,29 @@ export class ProjectComponent {
     if (!this.projectId) return;
     const title = prompt('Enter task title:');
     const description = prompt('Enter task description (optional):') || '';
+
+    if (!title) return;
+
+    // Check if there are no statuses, create a default "Pending" status first
+    if (this.statuses.length === 0) {
+      this.createDefaultPendingStatus()
+        .then(() => {
+          this.createTaskWithPrompt(title, description);
+        })
+        .catch(() => {
+          // If creating status fails, still try to create the task
+          this.createTaskWithPrompt(title, description);
+        });
+    } else {
+      this.createTaskWithPrompt(title, description);
+    }
+  }
+  private createTaskWithPrompt(title: string, description: string) {
     const payload = {
       title: title,
       description: description,
+      status: this.getDefaultStatusId(), // Use the smart default status method
     };
-
-    if (!title) return;
 
     this.apiService
       .post(`sadmin/projects/${this.projectId}/tasks`, payload)
@@ -345,7 +383,21 @@ export class ProjectComponent {
   }
 
   getTasks(status: string): any[] {
-    return this.tasks.filter((task) => task.status === status);
+    const filteredTasks = this.tasks.filter((task) => {
+      // Handle both cases: task.status as string or task.status as object
+      if (typeof task.status === 'string') {
+        return task.status === status;
+      } else if (task.status && task.status.id) {
+        // If status is an object, check if the status ID matches
+        return task.status.id.toString() === status;
+      } else if (task.status_id) {
+        // If we have status_id, compare with the status ID
+        return task.status_id.toString() === status;
+      }
+      return false;
+    });
+    console.log(`getTasks for status ${status}:`, filteredTasks);
+    return filteredTasks;
   }
 
   drop(event: CdkDragDrop<any[]>) {
@@ -388,10 +440,64 @@ export class ProjectComponent {
 
   submitAddTask() {
     if (!this.projectId || !this.newTaskTitle) return;
+
+    // Check if there are no statuses, create a default "Pending" status first
+    if (this.statuses.length === 0) {
+      this.createDefaultPendingStatus()
+        .then(() => {
+          this.createTask();
+        })
+        .catch(() => {
+          // If creating status fails, still try to create the task
+          this.createTask();
+        });
+    } else {
+      this.createTask();
+    }
+  }
+
+  private createDefaultPendingStatus(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const defaultStatus = {
+        id: 'pending',
+        name: 'Pending',
+        color: '#6b7280', // Gray color hex
+        isCustom: true,
+      };
+
+      this.apiService.post('sadmin/status/create', defaultStatus).subscribe({
+        next: (res: any) => {
+          // Add to local statuses array with CSS class for UI
+          const statusForUI = {
+            ...defaultStatus,
+            color: 'bg-gray-500', // CSS class for UI
+          };
+          this.statuses.push(statusForUI);
+          this.saveCustomStatuses();
+          console.log('Default Pending status created');
+          resolve();
+        },
+        error: (err) => {
+          console.error('Failed to create default status:', err);
+          // Fallback: add to local array even if API fails
+          const statusForUI = {
+            ...defaultStatus,
+            color: 'bg-gray-500', // CSS class for UI
+          };
+          this.statuses.push(statusForUI);
+          this.saveCustomStatuses();
+          reject(err);
+        },
+      });
+    });
+  }
+  private createTask() {
     const payload = {
       title: this.newTaskTitle,
       description: this.newTaskDescription,
+      status: this.getDefaultStatusId(), // Use the smart default status method
     };
+
     this.apiService
       .post(`sadmin/projects/${this.projectId}/tasks`, payload)
       .subscribe({
@@ -580,7 +686,19 @@ export class ProjectComponent {
       this.kanban[status.id].splice(
         0,
         this.kanban[status.id].length,
-        ...projectTasks.filter((t: any) => t.status === status.id)
+        ...projectTasks.filter((t: any) => {
+          // Handle both cases: task.status as string or task.status as object
+          if (typeof t.status === 'string') {
+            return t.status === status.id;
+          } else if (t.status && t.status.id) {
+            // If status is an object, check if the status ID matches
+            return t.status.id.toString() === status.id;
+          } else if (t.status_id) {
+            // If we have status_id, compare with the status ID
+            return t.status_id.toString() === status.id;
+          }
+          return false;
+        })
       );
     }
   }
