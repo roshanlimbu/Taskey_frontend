@@ -185,8 +185,8 @@ export class CompanyFormComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error creating company:', error);
-          this.message = 'Error registering company. Please try again.';
-          this.messageType = 'error';
+          this.message =
+            error.message || 'Error registering company. Please try again.';
           this.isSubmitting = false;
         },
       });
@@ -199,36 +199,37 @@ export class CompanyFormComponent implements OnInit {
 
   submitUserForm() {
     if (this.selectedCompanyId) {
-      const userData = {
-        companyId: this.selectedCompanyId,
+      const payload = {
+        company_id: this.selectedCompanyId,
       };
 
-      this.apiService.post('/users/join-company', userData).subscribe({
-        next: (response: any) => {
-          console.log('User joined company successfully:', response);
-          this.message =
-            'Successfully joined the company! Redirecting to dashboard...';
-          this.messageType = 'success';
-          this.isSubmitting = false;
+      this.apiService
+        .post('company/assign-company-to-user', payload)
+        .subscribe({
+          next: (response: any) => {
+            console.log('User joined company successfully:', response);
+            this.message =
+              'Successfully joined the company! Redirecting to dashboard...';
+            this.messageType = 'success';
+            this.isSubmitting = false;
 
-          // Update user's company_id in localStorage
-          this.updateUserCompanyId(this.selectedCompanyId);
+            this.updateUserCompanyId(this.selectedCompanyId);
 
-          // Reset form
-          this.selectedCompanyId = '';
+            // Reset form
+            this.selectedCompanyId = '';
 
-          // Redirect to dashboard after a short delay
-          setTimeout(() => {
-            this.redirectToDashboard();
-          }, 2000);
-        },
-        error: (error) => {
-          console.error('Error joining company:', error);
-          this.message = 'Error joining company. Please try again.';
-          this.messageType = 'error';
-          this.isSubmitting = false;
-        },
-      });
+            // Redirect to dashboard after a short delay
+            setTimeout(() => {
+              this.redirectToDashboard();
+            }, 2000);
+          },
+          error: (error) => {
+            console.error('Error joining company:', error);
+            this.message = 'Error joining company. Please try again.';
+            this.messageType = 'error';
+            this.isSubmitting = false;
+          },
+        });
     } else {
       this.message = 'Please select a company.';
       this.messageType = 'error';
