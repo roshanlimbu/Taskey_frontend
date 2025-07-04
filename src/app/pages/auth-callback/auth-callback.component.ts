@@ -55,7 +55,26 @@ export class AuthCallbackComponent implements OnInit {
           localStorage.setItem('user', JSON.stringify(user));
 
           this.notificationService.requestPermission();
+
+          // Check if user has a company_id
+          if (
+            user.company_id === null ||
+            user.company_id === undefined ||
+            user.company_id === ''
+          ) {
+            // User is not associated with any company, redirect to company form
+            console.log(
+              'User has no company association, redirecting to company form'
+            );
+            this.router.navigate(['/company-form']);
+            return;
+          }
+
+          // User has a company, proceed with normal role-based navigation
           switch (user.role) {
+            case 0:
+              this.router.navigate(['/super/dashboard']);
+              break;
             case 1:
               this.router.navigate(['/dashboard']);
               break;
