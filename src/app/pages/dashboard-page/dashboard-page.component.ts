@@ -112,19 +112,22 @@ export class DashboardPageComponent implements OnInit {
 
     this.apiService.get('sadmin/verifiedUsers').subscribe({
       next: (res: any) => {
-        this.allVerifiedUsers = res.users;
+        // Ensure users is an array
+        this.allVerifiedUsers = Array.isArray(res.users) ? res.users : [];
         this.totalMembers = this.allVerifiedUsers.length;
         console.log(this.allVerifiedUsers);
       },
       error: (err) => {
         console.error('Error fetching users:', err);
+        this.allVerifiedUsers = [];
       },
     });
     console.log(this.user);
     this.apiService.get('sadmin/projects').subscribe({
       next: (res: any) => {
-        this.projects = res.projects;
-        this.totalProjects = res.projects.length;
+        // Convert projects object to array
+        this.projects = res.projects ? Object.values(res.projects) : [];
+        this.totalProjects = this.projects.length;
       },
       error: (err) => {
         console.error('Error fetching projects:', err);
@@ -274,13 +277,15 @@ export class DashboardPageComponent implements OnInit {
   }
 
   daysUntilDue(dueDate: string): number {
+    if (!dueDate) return 0;
     const today = new Date();
     const due = new Date(dueDate);
+    if (isNaN(due.getTime())) return 0;
     return Math.ceil((due.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
   }
 
   overallCompletion(): number {
-    if (!this.projects.length) return 0;
+    if (!this.projects || !this.projects.length) return 0;
     const total = this.projects.reduce(
       (sum, p) => sum + (p.progress_percentage || 0),
       0,
@@ -288,6 +293,7 @@ export class DashboardPageComponent implements OnInit {
     return Math.round(total / this.projects.length);
   }
   getTotalCompletedTasks(): number {
+    if (!this.projects) return 0;
     return this.projects.reduce(
       (sum, project) => sum + (project.completed_tasks || 0),
       0,
@@ -295,6 +301,7 @@ export class DashboardPageComponent implements OnInit {
   }
 
   getTotalRemainingTasks(): number {
+    if (!this.projects) return 0;
     return this.projects.reduce((sum, project) => {
       const total = project.total_tasks || 0;
       const completed = project.completed_tasks || 0;
