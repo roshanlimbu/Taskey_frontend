@@ -9,7 +9,9 @@ interface CompanyDetails {
   email: string;
   phone: string;
   address: string;
+  website?: string;
   created_at: string;
+  updated_at: string;
   user_stats: {
     total_users: number;
     active_users: number;
@@ -47,6 +49,45 @@ interface CompanyDetails {
   };
 }
 
+interface ApiResponse {
+  company: {
+    id: number;
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    website?: string;
+    created_at: string;
+    updated_at: string;
+  };
+  users: Array<{
+    id: number;
+    github_id: string;
+    name: string;
+    email: string;
+    role: number;
+    dev_role: string;
+    profile_image: string;
+    password?: string;
+    created_at: string;
+    updated_at: string;
+    is_user_verified: number;
+    company_id: number;
+  }>;
+  projects: Array<{
+    id: number;
+    company_id: number;
+    name: string;
+    description: string;
+    project_lead_id?: number;
+    created_at: string;
+    updated_at: string;
+    members?: any;
+    due_date?: string;
+  }>;
+  tasks: Array<any>;
+}
+
 @Component({
   selector: 'app-company-details',
   imports: [CommonModule],
@@ -78,9 +119,9 @@ export class CompanyDetailsComponent implements OnInit {
     this.isLoading = true;
     this.error = null;
 
-    this.apiService.get(`api/company/details/${this.companyId}`).subscribe({
+    this.apiService.get(`company/details/${this.companyId}`).subscribe({
       next: (response: any) => {
-        this.companyDetails = response.data;
+        this.companyDetails = this.processApiResponse(response as ApiResponse);
         this.isLoading = false;
       },
       error: (error) => {
@@ -97,6 +138,132 @@ export class CompanyDetailsComponent implements OnInit {
     });
   }
 
+  private processApiResponse(response: ApiResponse): CompanyDetails {
+    const { company, users, projects, tasks } = response;
+
+    // Calculate user stats
+    const userStats = this.calculateUserStats(users);
+
+    // Calculate project stats
+    const projectStats = this.calculateProjectStats(projects);
+
+    // Calculate task stats
+    const taskStats = this.calculateTaskStats(tasks);
+
+    // Get recent activity
+    const recentActivity = this.getRecentActivity(users, projects);
+
+    return {
+      id: company.id,
+      name: company.name,
+      email: company.email,
+      phone: company.phone,
+      address: company.address,
+      website: company.website,
+      created_at: company.created_at,
+      updated_at: company.updated_at,
+      user_stats: userStats,
+      project_stats: projectStats,
+      task_stats: taskStats,
+      recent_activity: recentActivity,
+    };
+  }
+
+  private calculateUserStats(users: any[]): CompanyDetails['user_stats'] {
+    const totalUsers = users.length;
+    const activeUsers = users.filter(
+      (user) => user.is_user_verified === 1
+    ).length;
+
+    // Count users by role
+    const roleCount: { [key: string]: number } = {};
+    users.forEach((user) => {
+      const roleName = this.getRoleDisplayName(user.role);
+      roleCount[roleName] = (roleCount[roleName] || 0) + 1;
+    });
+
+    const usersByRole = Object.entries(roleCount).map(([role, count]) => ({
+      role,
+      count,
+    }));
+
+    return {
+      total_users: totalUsers,
+      active_users: activeUsers,
+      users_by_role: usersByRole,
+    };
+  }
+
+  private calculateProjectStats(
+    projects: any[]
+  ): CompanyDetails['project_stats'] {
+    const totalProjects = projects.length;
+    const activeProjects = projects.length;
+    // Todo: For now, assume all projects are active since we don't have status field
+    const completedProjects = 0; // This would need to be determined based on project status
+
+    return {
+      total_projects: totalProjects,
+      active_projects: activeProjects,
+      completed_projects: completedProjects,
+    };
+  }
+
+  private calculateTaskStats(tasks: any[]): CompanyDetails['task_stats'] {
+    const totalTasks = tasks.length;
+    const completedTasks = 0;
+    const pendingTasks = 0;
+    const inProgressTasks = 0;
+    const overdueTasks = 0;
+
+    return {
+      total_tasks: totalTasks,
+      completed_tasks: completedTasks,
+      pending_tasks: pendingTasks,
+      in_progress_tasks: inProgressTasks,
+      overdue_tasks: overdueTasks,
+    };
+  }
+
+  private getRecentActivity(
+    users: any[],
+    projects: any[]
+  ): CompanyDetails['recent_activity'] {
+    // Sort users by created_at and take the most recent ones
+    const recentUsers = users
+      .sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )
+      .slice(0, 5)
+      .map((user) => ({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        created_at: user.created_at,
+      }));
+
+    // Sort projects by created_at and take the most recent ones
+    const recentProjects = projects
+      .sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      )
+      .slice(0, 5)
+      .map((project) => ({
+        id: project.id,
+        name: project.name,
+        description: project.description,
+        created_at: project.created_at,
+      }));
+
+    return {
+      users: recentUsers,
+      projects: recentProjects,
+    };
+  }
+
   private createMockCompanyData() {
     // Mock data for demonstration
     this.companyDetails = {
@@ -105,7 +272,9 @@ export class CompanyDetailsComponent implements OnInit {
       email: 'testcompany@gmail.com',
       phone: '9876543210',
       address: 'lalvitti',
+      website: undefined,
       created_at: '2025-07-04T11:08:50.000000Z',
+      updated_at: '2025-07-04T11:08:50.000000Z',
       user_stats: {
         total_users: 5,
         active_users: 3,
@@ -169,9 +338,9 @@ export class CompanyDetailsComponent implements OnInit {
 
   getRoleDisplayName(role: number): string {
     const roleMap: { [key: number]: string } = {
-      0: 'Super Admin',
-      1: 'Master Admin',
-      2: 'Project Admin',
+      0: 'Master Admin',
+      1: 'Company Lead',
+      2: 'Project Lead',
       3: 'User',
     };
     return roleMap[role] || 'Unknown';

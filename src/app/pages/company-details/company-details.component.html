@@ -52,6 +52,10 @@
                     <span class="detail-icon">📍</span>
                     <span class="detail-text">{{ companyDetails.address }}</span>
                 </div>
+                <div class="company-detail" *ngIf="companyDetails.website">
+                    <span class="detail-icon">🌐</span>
+                    <span class="detail-text">{{ companyDetails.website }}</span>
+                </div>
                 <div class="company-detail">
                     <span class="detail-icon">📅</span>
                     <span class="detail-text">Founded: {{ formatDate(companyDetails.created_at) }}</span>
