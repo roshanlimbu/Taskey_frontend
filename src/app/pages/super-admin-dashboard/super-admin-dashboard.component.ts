@@ -53,6 +53,7 @@ interface DashboardData {
     average_response_time: string;
     total_companies: number;
     companies: Array<{
+      id: number;
       name: string;
       email: string;
       phone: string;
@@ -89,6 +90,10 @@ export class SuperAdminDashboardComponent implements OnInit {
         this.isLoading = false;
       },
     });
+  }
+
+  navigateToCompanyDetails(companyId: any) {
+    this.router.navigate(['/superadmin/company', companyId]);
   }
 
   getRoleDisplayName(role: number): string {

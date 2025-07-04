@@ -8,4 +8,12 @@ export const routes: Routes = [
         '../pages/super-admin-dashboard/super-admin-dashboard.component'
       ).then((m) => m.SuperAdminDashboardComponent),
   },
+
+  {
+    path: 'company/:id',
+    loadComponent: () =>
+      import('../pages/company-details/company-details.component').then(
+        (m) => m.CompanyDetailsComponent
+      ),
+  },
 ];
