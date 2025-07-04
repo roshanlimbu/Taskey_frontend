@@ -78,25 +78,23 @@ export class CompanyDetailsComponent implements OnInit {
     this.isLoading = true;
     this.error = null;
 
-    this.apiService
-      .get(`supersuperadmin/company/${this.companyId}/details`)
-      .subscribe({
-        next: (response: any) => {
-          this.companyDetails = response.data;
-          this.isLoading = false;
-        },
-        error: (error) => {
-          console.error('Error loading company details:', error);
+    this.apiService.get(`api/company/details/${this.companyId}`).subscribe({
+      next: (response: any) => {
+        this.companyDetails = response.data;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error loading company details:', error);
 
-          // For demo purposes, create mock data if API is not available
-          if (error.status === 404 || error.status === 500) {
-            this.createMockCompanyData();
-          } else {
-            this.error = 'Failed to load company details';
-            this.isLoading = false;
-          }
-        },
-      });
+        // For demo purposes, create mock data if API is not available
+        if (error.status === 404 || error.status === 500) {
+          this.createMockCompanyData();
+        } else {
+          this.error = 'Failed to load company details';
+          this.isLoading = false;
+        }
+      },
+    });
   }
 
   private createMockCompanyData() {

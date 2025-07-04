@@ -189,7 +189,7 @@
             <div class="companies-card">
                 <h3>Companies ({{ dashboardData.system_health.total_companies }})</h3>
                 <div class="companies-grid">
-                    <div *ngFor="let company of dashboardData.system_health.companies" class="company-item clickable">
+                    <div *ngFor="let company of dashboardData.system_health.companies" class="company-item clickable" (click)="navigateToCompanyDetails(company.id)">
                         <div class="company-header">
                             <div class="company-avatar">
                                 <span>{{ company.name.charAt(0).toUpperCase() }}</span>
