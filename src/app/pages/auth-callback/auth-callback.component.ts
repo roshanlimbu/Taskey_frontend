@@ -70,7 +70,17 @@ export class AuthCallbackComponent implements OnInit {
             return;
           }
 
-          // User has a company, proceed with normal role-based navigation
+          // Check if user is verified
+          if (user.is_user_verified === 0 || user.is_user_verified === false) {
+            // User is not verified, redirect to wait-verification page
+            console.log(
+              'User is not verified, redirecting to wait-verification'
+            );
+            this.router.navigate(['/user/wait-verification']);
+            return;
+          }
+
+          // User has a company and is verified, proceed with normal role-based navigation
           switch (user.role) {
             case 0:
               this.router.navigate(['/super/dashboard']);

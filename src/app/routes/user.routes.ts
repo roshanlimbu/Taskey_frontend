@@ -14,4 +14,12 @@ export const routes: Routes = [
         (m) => m.CompanyFormComponent
       ),
   },
+
+  {
+    path: 'wait-verification',
+    loadComponent: () =>
+      import('../pages/ask-verification/ask-verification.component').then(
+        (m) => m.AskVerificationComponent
+      ),
+  },
 ];
