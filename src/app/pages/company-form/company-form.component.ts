@@ -35,6 +35,7 @@ export class CompanyFormComponent implements OnInit {
   // User form data
   selectedCompanyId = '';
   companies: Company[] = [];
+  selectedCompanyDetails: any = {};
 
   constructor(private apiService: ApiService, private router: Router) {}
 
@@ -43,7 +44,7 @@ export class CompanyFormComponent implements OnInit {
   }
 
   get selectedCompany(): Company | undefined {
-    return this.companies.find((c) => c.id === this.selectedCompanyId);
+    return this.companies.find((c) => c.id == this.selectedCompanyId);
   }
 
   private getCurrentUser() {
@@ -98,9 +99,9 @@ export class CompanyFormComponent implements OnInit {
 
   loadCompanies() {
     // Load companies from API
-    this.apiService.get('/companies').subscribe({
+    this.apiService.get('company').subscribe({
       next: (response: any) => {
-        this.companies = response.data || [];
+        this.companies = response || [];
       },
       error: (error) => {
         console.error('Error loading companies:', error);
@@ -155,7 +156,7 @@ export class CompanyFormComponent implements OnInit {
       this.companyForm.phone &&
       this.companyForm.address
     ) {
-      this.apiService.post('/companies', this.companyForm).subscribe({
+      this.apiService.post('company/add', this.companyForm).subscribe({
         next: (response: any) => {
           console.log('Company created successfully:', response);
           this.message =
