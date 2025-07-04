@@ -1,0 +1,23 @@
+<div class="verification-container">
+    <div class="verification-content">
+        <div class="verification-icon" style="display: flex; justify-content: center;">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+                    fill="#4CAF50" />
+            </svg>
+        </div>
+        <h2 class="verification-title">Verification Pending</h2>
+        <p class="verification-message">
+            Please wait while we verify your account. This process may take a few moments.
+        </p>
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+        </div>
+        <div class="refresh-section">
+            <p class="refresh-text">Taking too long?</p>
+            <button class="refresh-button" (click)="manualRefresh()">
+                Check Again
+            </button>
+        </div>
+    </div>
+</div>
