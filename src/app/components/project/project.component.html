@@ -258,29 +258,49 @@
               </div>
             </div>
           </div>
+          <div class="mb-4">
+            <button (click)="openAddStatusModal()"
+              class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center gap-2">
+              <span class="material-symbols-outlined">add</span>
+              Add Custom Status
+            </button>
+          </div>
           <div class="overflow-x-auto" appAutoScroll [scrollSpeed]="10">
-            <div class="flex gap-4">
+            <div *ngIf="!hasStatuses" class="text-center py-12">
+              <div class="text-neutral-500 text-lg mb-4">
+                No statuses available. Add your first status to get started!
+              </div>
+              <button (click)="openAddStatusModal()"
+                class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center gap-2 mx-auto">
+                <span class="material-symbols-outlined">add</span>
+                Add Your First Status
+              </button>
+            </div>
+            <div *ngIf="hasStatuses" class="flex gap-4">
               <ng-container *ngFor="let status of statuses" appAutoScroll>
                 <div
-                  class="bg-neutral-50 rounded-lg p-4 w-full md:w-72 flex-shrink-0 min-h-[500px] max-h-[70vh] overflow-y-auto flex flex-col"
+                  class="bg-neutral-50 rounded-lg p-4 w-full md:w-72 flex-shrink-0 min-h-[500px] max-h-[70vh] overflow-y-auto flex flex-col status-column"
+                  [ngClass]="{ 'new-status-column': true, 'cdk-drop-list-dragging': dragging }"
                   cdkDropList
                   [id]="status.id"
                   [cdkDropListData]="getTasks(status.id)"
                   [cdkDropListConnectedTo]="connectedDropLists"
                   (cdkDropListDropped)="drop($event)"
-                  [ngClass]="{ 'cdk-drop-list-dragging': dragging }"
                   (cdkDropListEntered)="dragging = true"
                   (cdkDropListExited)="dragging = false"
                 >
                   <div
-                    class="font-medium text-neutral-600 mb-3 flex items-center"
+                    class="font-medium text-neutral-600 mb-3 flex items-center justify-between"
                   >
-                    <span
-                      class="h-2 w-2 rounded-full mr-2"
-                      [ngClass]="status.color"
-                    ></span>
-                    {{ status.label }}
-                  </div>
+                    <div class="flex items-center">
+                      <span class="h-2 w-2 rounded-full mr-2" [ngClass]="status.color"></span>
+                      {{ status.name}}
+                    </div>
+                    <button (click)="deleteCustomStatus(status.id)"
+                      class="text-red-500 hover:text-red-700 transition-colors duration-200 p-1 rounded-full hover:bg-red-50 delete-status-btn" title="Delete status">
+                      <span class="material-symbols-outlined text-sm">delete</span>
+                    </button>
+                    </div>
                   <div class="min-h-[50px] space-y-2 flex-1">
                     <div
                       *ngFor="let task of getTasks(status.id)"
@@ -544,7 +564,7 @@
         </button>
         <button
           type="submit"
-          class="px-4 py-2 rounded bgprimary text-white hover:bg-primary-600"
+          class="px-4 py-2 rounded bg-blue-500 text-white hover:bg-blue-600"
           [disabled]="isSubmitting || projectForm.invalid"
         >
           <span *ngIf="!isSubmitting">Create</span>
@@ -559,5 +579,41 @@
     >
       &times;
     </button>
+  </div>
+</div>
+
+<!-- Add Custom Status Modal -->
+<div *ngIf="showAddStatusModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 modal-backdrop">
+  <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+    <h3 class="text-lg font-semibold mb-4">Add Custom Status</h3>
+
+    <div class="mb-4">
+      <label class="block text-sm font-medium mb-2">Status Name</label>
+      <input type="text" [(ngModel)]="newStatusName" placeholder="Enter status name"
+        class="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+    </div>
+
+    <div class="mb-6">
+      <label class="block text-sm font-medium mb-2">Status Color</label>
+      <div class="grid grid-cols-4 gap-2 color-picker-grid">
+        <div *ngFor="let color of colorOptions" (click)="newStatusColor = color.class"
+          class="w-12 h-12 rounded-lg cursor-pointer border-2 transition-all duration-200 flex items-center justify-center status-color-picker"
+          [ngClass]="[color.class, newStatusColor === color.class ? 'border-neutral-800 scale-110 selected' : 'border-neutral-300']"
+          [title]="color.name">
+          <span *ngIf="newStatusColor === color.class" class="material-symbols-outlined text-white text-sm">check</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex gap-2 justify-end">
+      <button (click)="closeAddStatusModal()"
+        class="px-4 py-2 text-neutral-600 border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors duration-200">
+        Cancel
+      </button>
+      <button (click)="addCustomStatus()" [disabled]="!newStatusName.trim()"
+        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200">
+        Add Status
+      </button>
+    </div>
   </div>
 </div>

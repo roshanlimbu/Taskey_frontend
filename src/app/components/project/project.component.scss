@@ -5,3 +5,71 @@
 .hide-scrollbar::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
+
+// Custom Status Modal Styles
+.modal-backdrop {
+  backdrop-filter: blur(4px);
+}
+
+.status-color-picker {
+  &:hover {
+    transform: scale(1.1);
+  }
+  
+  &.selected {
+    transform: scale(1.1);
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.3);
+  }
+}
+
+// Status Column Styles
+.status-column {
+  .delete-status-btn {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  
+  &:hover .delete-status-btn {
+    opacity: 1;
+  }
+}
+
+// Animation for new status columns
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.new-status-column {
+  animation: slideInFromRight 0.3s ease-out;
+}
+
+// Custom scrollbar for color picker
+.color-picker-grid {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f1f5f9;
+  
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 3px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 3px;
+    
+    &:hover {
+      background: #94a3b8;
+    }
+  }
+}

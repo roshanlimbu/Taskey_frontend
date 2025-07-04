@@ -68,25 +68,35 @@ export class ProjectComponent {
   projects: any[] = [];
   selectedProjectId: number | null = null;
 
-  statuses = [
-    { id: 'pending', label: 'Pending', color: 'bg-gray-500' },
-    { id: 'ready_to_start', label: 'Ready to Start', color: 'bg-blue-400' },
-    { id: 'in_progress', label: 'In Progress', color: 'bg-yellow-500' },
-    { id: 'blocked', label: 'Blocked', color: 'bg-red-500' },
-    { id: 'in_review', label: 'In Review', color: 'bg-purple-500' },
-    { id: 'testing_qa', label: 'Testing/QA', color: 'bg-pink-500' },
-    {
-      id: 'awaiting_feedback',
-      label: 'Awaiting Feedback',
-      color: 'bg-orange-400',
-    },
-    { id: 'done', label: 'Done', color: 'bg-green-500' },
-    { id: 'cancelled', label: 'Cancelled', color: 'bg-neutral-400' },
-    {
-      id: 'deployed_released',
-      label: 'Deployed/Released',
-      color: 'bg-teal-500',
-    },
+  // Custom status management
+  showAddStatusModal = false;
+  newStatusName = '';
+  newStatusColor = 'bg-blue-500';
+
+  statuses: Array<{
+    id: string;
+    name: string;
+    color: string;
+    isCustom: boolean;
+  }> = [];
+
+  colorOptions = [
+    { name: 'Blue', class: 'bg-blue-500', hex: '#3b82f6' },
+    { name: 'Green', class: 'bg-green-500', hex: '#10b981' },
+    { name: 'Yellow', class: 'bg-yellow-500', hex: '#f59e0b' },
+    { name: 'Red', class: 'bg-red-500', hex: '#ef4444' },
+    { name: 'Purple', class: 'bg-purple-500', hex: '#8b5cf6' },
+    { name: 'Pink', class: 'bg-pink-500', hex: '#ec4899' },
+    { name: 'Orange', class: 'bg-orange-500', hex: '#f97316' },
+    { name: 'Teal', class: 'bg-teal-500', hex: '#14b8a6' },
+    { name: 'Indigo', class: 'bg-indigo-500', hex: '#6366f1' },
+    { name: 'Cyan', class: 'bg-cyan-500', hex: '#06b6d4' },
+    { name: 'Emerald', class: 'bg-emerald-500', hex: '#10b981' },
+    { name: 'Lime', class: 'bg-lime-500', hex: '#84cc16' },
+    { name: 'Amber', class: 'bg-amber-500', hex: '#f59e0b' },
+    { name: 'Rose', class: 'bg-rose-500', hex: '#f43f5e' },
+    { name: 'Violet', class: 'bg-violet-500', hex: '#8b5cf6' },
+    { name: 'Sky', class: 'bg-sky-500', hex: '#0ea5e9' },
   ];
 
   showNewProjectForm = false;
@@ -95,6 +105,10 @@ export class ProjectComponent {
 
   get connectedDropLists() {
     return this.statuses.map((s) => s.id);
+  }
+
+  get hasStatuses() {
+    return this.statuses.length > 0;
   }
 
   constructor(
@@ -117,6 +131,7 @@ export class ProjectComponent {
     });
   }
   ngOnInit() {
+    this.loadCustomStatuses();
     this.apiService.get('sadmin/users').subscribe({
       next: (res: any) => {
         this.allUsers = res.users;
@@ -134,6 +149,156 @@ export class ProjectComponent {
       },
       error: (err) => {
         console.error('Failed to load projects:', err);
+      },
+    });
+  }
+
+  loadCustomStatuses() {
+    this.apiService.get('sadmin/status').subscribe({
+      next: (res: any) => {
+        this.statuses = res.statuses || [];
+        // Mark all loaded statuses as custom and convert hex colors to CSS classes if needed
+        this.statuses.forEach((status) => {
+          status.isCustom = true;
+          // If color is hex, convert to corresponding CSS class for UI display
+          if (status.color && status.color.startsWith('#')) {
+            const colorOption = this.colorOptions.find(
+              (option) => option.hex === status.color
+            );
+            if (colorOption) {
+              status.color = colorOption.class;
+            } else {
+              // Default to blue if hex doesn't match any predefined color
+              status.color = 'bg-blue-500';
+            }
+          }
+        });
+      },
+      error: (err) => {
+        console.error('Failed to load custom statuses:', err);
+        // Fallback to localStorage
+        const savedStatuses = localStorage.getItem('customStatuses');
+        if (savedStatuses) {
+          this.statuses = JSON.parse(savedStatuses);
+        }
+      },
+    });
+  }
+
+  saveCustomStatuses() {
+    // Save to localStorage as backup
+    localStorage.setItem('customStatuses', JSON.stringify(this.statuses));
+  }
+
+  openAddStatusModal() {
+    this.showAddStatusModal = true;
+    this.newStatusName = '';
+    this.newStatusColor = 'bg-blue-500'; // This will be converted to hex when sending to backend
+  }
+
+  closeAddStatusModal() {
+    this.showAddStatusModal = false;
+    this.newStatusName = '';
+    this.newStatusColor = 'bg-blue-500';
+  }
+
+  addCustomStatus() {
+    if (this.newStatusName.trim()) {
+      const statusId = this.newStatusName.toLowerCase().replace(/\s+/g, '_');
+
+      // Check if status already exists
+      const existingStatus = this.statuses.find((s) => s.id === statusId);
+      if (existingStatus) {
+        alert('A status with this name already exists');
+        return;
+      }
+
+      // Find the selected color option to get hex value
+      const selectedColorOption = this.colorOptions.find(
+        (color) => color.class === this.newStatusColor
+      );
+      const colorHex = selectedColorOption
+        ? selectedColorOption.hex
+        : '#3b82f6'; // default to blue
+
+      const newStatus = {
+        id: statusId,
+        name: this.newStatusName.trim(),
+        color: colorHex, // Send hex value instead of CSS class
+        isCustom: true,
+      };
+
+      // Save to database
+      this.apiService.post('sadmin/status/create', newStatus).subscribe({
+        next: (res: any) => {
+          // Store the CSS class locally for UI display
+          const statusForUI = {
+            ...newStatus,
+            color: this.newStatusColor, // Keep CSS class for local UI
+          };
+          this.statuses.push(statusForUI);
+          this.saveCustomStatuses();
+          this.closeAddStatusModal();
+          console.log('Custom status saved to database');
+        },
+        error: (err) => {
+          console.error('Failed to save custom status to database:', err);
+          // Fallback to localStorage with CSS class
+          const statusForUI = {
+            ...newStatus,
+            color: this.newStatusColor, // Keep CSS class for local UI
+          };
+          this.statuses.push(statusForUI);
+          this.saveCustomStatuses();
+          this.closeAddStatusModal();
+        },
+      });
+    }
+  }
+
+  deleteCustomStatus(statusId: string) {
+    // Check if any tasks are using this status
+    const tasksUsingStatus = this.tasks.filter(
+      (task) => task.status === statusId
+    );
+    if (tasksUsingStatus.length > 0) {
+      const confirmDelete = confirm(
+        `There are ${tasksUsingStatus.length} tasks using this status. Are you sure you want to delete it? Tasks will be moved to the first available status.`
+      );
+      if (!confirmDelete) return;
+
+      // Move tasks to first available status
+      const firstStatus = this.statuses.find((s) => s.id !== statusId);
+      if (firstStatus) {
+        tasksUsingStatus.forEach((task) => {
+          task.status = firstStatus.id;
+          this.apiService
+            .put(`tasks/${task.id}/status`, { status: firstStatus.id })
+            .subscribe({
+              error: (err) => {
+                console.error('Failed to update task status:', err);
+              },
+            });
+        });
+      }
+    }
+
+    // Delete from database
+    this.apiService.delete(`sadmin/status/delete/${statusId}`).subscribe({
+      next: (res: any) => {
+        this.statuses = this.statuses.filter(
+          (status) => status.id !== statusId
+        );
+        this.saveCustomStatuses();
+        console.log('Custom status deleted from database');
+      },
+      error: (err) => {
+        console.error('Failed to delete custom status from database:', err);
+        // Fallback to localStorage
+        this.statuses = this.statuses.filter(
+          (status) => status.id !== statusId
+        );
+        this.saveCustomStatuses();
       },
     });
   }
