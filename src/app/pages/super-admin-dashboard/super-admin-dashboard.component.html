@@ -1,1 +1,255 @@
-<p>super-admin-dashboard works!</p>
+<div class="dashboard-container">
+    <!-- Header -->
+    <div class="dashboard-header">
+        <h1 class="dashboard-title">Super Admin Dashboard</h1>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="isLoading" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Loading dashboard data...</p>
+    </div>
+
+    <!-- Dashboard Content -->
+    <div *ngIf="!isLoading && dashboardData" class="dashboard-content">
+
+        <!-- Stats Cards Row -->
+        <div class="stats-grid">
+            <!-- User Stats -->
+            <div class="stat-card user-card">
+                <div class="stat-header">
+                    <h3>Users</h3>
+                    <div class="stat-icon user-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" />
+                            <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" />
+                            <path d="m22 21-3-3m0 0a2 2 0 0 0 0-4 2 2 0 0 0 0 4" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-number">{{ dashboardData.user_stats.total_users }}</div>
+                <div class="stat-details">
+                    <span class="stat-detail">{{ dashboardData.user_stats.active_users }} Active</span>
+                    <span class="stat-detail">{{ dashboardData.user_stats.new_users_this_month }} New this month</span>
+                </div>
+            </div>
+
+            <!-- Project Stats -->
+            <div class="stat-card project-card">
+                <div class="stat-header">
+                    <h3>Projects</h3>
+                    <div class="stat-icon project-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" />
+                            <path d="M3 3h18v18H3V3z" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-number">{{ dashboardData.project_stats.total_projects }}</div>
+                <div class="stat-details">
+                    <span class="stat-detail">{{ dashboardData.project_stats.active_projects }} Active</span>
+                    <span class="stat-detail">{{ dashboardData.project_stats.projects_this_month }} Created this month</span>
+                </div>
+            </div>
+
+            <!-- Task Stats -->
+            <div class="stat-card task-card">
+                <div class="stat-header">
+                    <h3>Tasks</h3>
+                    <div class="stat-icon task-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="2" />
+                            <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" />
+                            <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" />
+                            <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-number">{{ dashboardData.task_stats.total_tasks }}</div>
+                <div class="stat-details">
+                    <span class="stat-detail">{{ dashboardData.task_stats.completed_tasks }} Completed</span>
+                    <span class="stat-detail">{{ dashboardData.task_stats.pending_tasks }} Pending</span>
+                </div>
+            </div>
+
+            <!-- System Health -->
+            <div class="stat-card system-card">
+                <div class="stat-header">
+                    <h3>System Health</h3>
+                    <div class="stat-icon system-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <rect x="2" y="4" width="20" height="16" rx="2" stroke="currentColor" stroke-width="2" />
+                            <path d="M6 8h.01M10 8h.01M14 8h.01" stroke="currentColor" stroke-width="2" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="stat-number">{{ dashboardData.system_health.average_response_time }}</div>
+                <div class="stat-details">
+                    <span class="stat-detail">{{ dashboardData.system_health.database_size }}GB DB</span>
+                    <span class="stat-detail">{{ dashboardData.system_health.total_storage_used }} Storage</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Second Row - Charts and Progress -->
+        <div class="analytics-grid">
+            <!-- Task Progress -->
+            <div class="analytics-card">
+                <h3>Task Progress Overview</h3>
+                <div class="progress-container">
+                    <div class="progress-circle">
+                        <div class="progress-text">
+                            <span class="progress-percentage">{{ getCompletionPercentage() }}%</span>
+                            <span class="progress-label">Complete</span>
+                        </div>
+                    </div>
+                    <div class="progress-stats">
+                        <div class="progress-stat">
+                            <span class="progress-stat-label">Completed</span>
+                            <span class="progress-stat-value completed">{{ dashboardData.task_stats.completed_tasks }}</span>
+                        </div>
+                        <div class="progress-stat">
+                            <span class="progress-stat-label">In Progress</span>
+                            <span class="progress-stat-value in-progress">{{ dashboardData.task_stats.in_progress_tasks }}</span>
+                        </div>
+                        <div class="progress-stat">
+                            <span class="progress-stat-label">Pending</span>
+                            <span class="progress-stat-value pending">{{ dashboardData.task_stats.pending_tasks }}</span>
+                        </div>
+                        <div class="progress-stat">
+                            <span class="progress-stat-label">Overdue</span>
+                            <span class="progress-stat-value overdue">{{ dashboardData.task_stats.overdue_tasks }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Roles Distribution -->
+            <div class="analytics-card">
+                <h3>User Roles Distribution</h3>
+                <div class="roles-list">
+                    <div *ngFor="let role of dashboardData.user_stats.users_by_role" class="role-item">
+                        <span class="role-name">{{ role.role }}</span>
+                        <div class="role-bar">
+                            <div class="role-progress" [style.width.%]="(role.count / dashboardData.user_stats.total_users) * 100"></div>
+                        </div>
+                        <span class="role-count">{{ role.count }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Third Row - Recent Activity -->
+        <div class="activity-grid">
+            <!-- Recent Users -->
+            <div class="activity-card">
+                <h3>Recent Users</h3>
+                <div class="activity-list">
+                    <div *ngFor="let user of dashboardData.recent_activity.users" class="activity-item">
+                        <div class="activity-avatar">
+                            <span>{{ user.name.charAt(0).toUpperCase() }}</span>
+                        </div>
+                        <div class="activity-info">
+                            <div class="activity-title">{{ user.name }}</div>
+                            <div class="activity-subtitle">{{ user.email }}</div>
+                            <div class="activity-meta">
+                                <span class="activity-role">{{ getRoleDisplayName(user.role) }}</span>
+                                <span class="activity-date">{{ formatDate(user.created_at) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Projects -->
+            <div class="activity-card">
+                <h3>Recent Projects</h3>
+                <div class="activity-list">
+                    <div *ngFor="let project of dashboardData.recent_activity.projects" class="activity-item">
+                        <div class="activity-avatar project-avatar">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2" />
+                                <path d="M3 3h18v18H3V3z" stroke="currentColor" stroke-width="2" />
+                            </svg>
+                        </div>
+                        <div class="activity-info">
+                            <div class="activity-title">{{ project.name }}</div>
+                            <div class="activity-subtitle">{{ project.description }}</div>
+                            <div class="activity-meta">
+                                <span class="activity-date">{{ formatDate(project.created_at) }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fourth Row - Companies -->
+        <div class="companies-section">
+            <div class="companies-card">
+                <h3>Companies ({{ dashboardData.system_health.total_companies }})</h3>
+                <div class="companies-grid">
+                    <div *ngFor="let company of dashboardData.system_health.companies" class="company-item clickable">
+                        <div class="company-header">
+                            <div class="company-avatar">
+                                <span>{{ company.name.charAt(0).toUpperCase() }}</span>
+                            </div>
+                            <div class="company-info">
+                                <div class="company-name">{{ company.name }}</div>
+                                <div class="company-email">{{ company.email }}</div>
+                            </div>
+                            <div class="company-click-indicator">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                    <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="company-details">
+                            <div class="company-detail">
+                                <span class="detail-label">Phone:</span>
+                                <span class="detail-value">{{ company.phone }}</span>
+                            </div>
+                            <div class="company-detail">
+                                <span class="detail-label">Address:</span>
+                                <span class="detail-value">{{ company.address }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Growth Analytics -->
+        <div class="growth-section">
+            <div class="growth-card">
+                <h3>Growth Analytics (Last 6 Months)</h3>
+                <div class="growth-chart">
+                    <div class="chart-container">
+                        <div *ngFor="let month of dashboardData.growth_analytics" class="chart-bar">
+                            <div class="bar-group">
+                                <div class="bar users-bar" [style.height.px]="month.users * 20" [title]="month.users + ' users'"></div>
+                                <div class="bar projects-bar" [style.height.px]="month.projects * 40" [title]="month.projects + ' projects'"></div>
+                                <div class="bar tasks-bar" [style.height.px]="month.tasks * 10" [title]="month.tasks + ' tasks'"></div>
+                            </div>
+                            <div class="bar-label">{{ month.month }}</div>
+                        </div>
+                    </div>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <div class="legend-color users-color"></div>
+                            <span>Users</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color projects-color"></div>
+                            <span>Projects</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color tasks-color"></div>
+                            <span>Tasks</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
