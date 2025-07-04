@@ -6,4 +6,12 @@ export const routes: Routes = [
     path: 'dashboard',
     component: UserDashboardComponent,
   },
+
+  {
+    path: 'company-form',
+    loadComponent: () =>
+      import('../pages/company-form/company-form.component').then(
+        (m) => m.CompanyFormComponent
+      ),
+  },
 ];
