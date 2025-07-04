@@ -41,6 +41,7 @@ interface User {
 })
 export class ProjectComponent {
   projectId: number | null = null;
+  selectedStatusId: any = null;
   project: any = null;
   tasks: any[] = [];
   members: any[] = [];
@@ -111,23 +112,23 @@ export class ProjectComponent {
     return this.statuses.length > 0;
   }
 
-  private getDefaultStatusId(): string {
-    // Priority order for default status:
-    // 1. 'pending' if it exists
-    // 2. First status in the list
-    // 3. 'pending' as fallback
+  // private getDefaultStatusId(): number {
+  //   // Priority order for default status:
+  //   // 1. 'pending' if it exists
+  //   // 2. First status in the list
+  //   // 3. 'pending' as fallback
 
-    const pendingStatus = this.statuses.find((s) => s.id === 'pending');
-    if (pendingStatus) {
-      return 'pending';
-    }
+  //   const pendingStatus = this.statuses.find((s) => s.id === 'pending');
+  //   if (pendingStatus) {
+  //     return 'pending';
+  //   }
 
-    if (this.statuses.length > 0) {
-      return this.statuses[0].id;
-    }
+  //   if (this.statuses.length > 0) {
+  //     return this.statuses[0].id;
+  //   }
 
-    return 'pending'; // fallback
-  }
+  //   return 'pending'; // fallback
+  // }
 
   constructor(
     private route: ActivatedRoute,
@@ -363,12 +364,19 @@ export class ProjectComponent {
       this.createTaskWithPrompt(title, description);
     }
   }
-  private createTaskWithPrompt(title: string, description: string) {
-    const payload = {
-      title: title,
-      description: description,
-      status: this.getDefaultStatusId(), // Use the smart default status method
-    };
+  private createTaskWithPrompt(
+    title: string,
+    description: string,
+    statusId?: number
+  ) {
+    const payload: { title: string; description: string; status_id?: number } =
+      {
+        title: title,
+        description: description,
+      };
+    if (statusId) {
+      payload.status_id = Number(statusId);
+    }
 
     this.apiService
       .post(`sadmin/projects/${this.projectId}/tasks`, payload)
@@ -422,7 +430,7 @@ export class ProjectComponent {
 
       // Optimistically update backend
       this.apiService
-        .put(`tasks/${task.id}/status`, { status: task.status })
+        .put(`tasks/${task.id}/status`, { status_id: Number(task.status) })
         .subscribe({
           error: () => {
             transferArrayItem(
@@ -492,11 +500,14 @@ export class ProjectComponent {
     });
   }
   private createTask() {
-    const payload = {
-      title: this.newTaskTitle,
-      description: this.newTaskDescription,
-      status: this.getDefaultStatusId(), // Use the smart default status method
-    };
+    const payload: { title: string; description: string; status_id?: number } =
+      {
+        title: this.newTaskTitle,
+        description: this.newTaskDescription,
+      };
+    if (this.selectedStatusId) {
+      payload.status_id = Number(this.selectedStatusId); // Use selected status if available
+    }
 
     this.apiService
       .post(`sadmin/projects/${this.projectId}/tasks`, payload)
