@@ -79,6 +79,7 @@ export class ProjectComponent {
     name: string;
     color: string;
     isCustom: boolean;
+    originalId?: number;
   }> = [];
 
   colorOptions = [
@@ -251,20 +252,27 @@ export class ProjectComponent {
       // Save to database
       this.apiService.post('sadmin/status/create', newStatus).subscribe({
         next: (res: any) => {
+          console.log('Status creation response:', res);
           const statusForUI = {
-            ...newStatus,
+            id: res.status?.id?.toString() || newStatus.id,
+            name: newStatus.name,
             color: this.newStatusColor,
+            isCustom: true,
+            originalId: res.status?.id || undefined, // Store the actual database ID
           };
           this.statuses.push(statusForUI);
           this.saveCustomStatuses();
           this.closeAddStatusModal();
-          console.log('Custom status saved to database');
+          console.log('Custom status saved to database:', statusForUI);
         },
         error: (err) => {
           console.error('Failed to save custom status to database:', err);
           const statusForUI = {
-            ...newStatus,
+            id: newStatus.id,
+            name: newStatus.name,
             color: this.newStatusColor,
+            isCustom: true,
+            originalId: undefined, // No database ID available
           };
           this.statuses.push(statusForUI);
           this.saveCustomStatuses();
@@ -290,8 +298,9 @@ export class ProjectComponent {
       if (firstStatus) {
         tasksUsingStatus.forEach((task) => {
           task.status = firstStatus.id;
+          task.status_id = this.getStatusApiId(firstStatus.id);
           this.apiService
-            .put(`tasks/${task.id}/status`, { status: firstStatus.id })
+            .put(`tasks/${task.id}/status`, { status_id: task.status_id })
             .subscribe({
               error: (err) => {
                 console.error('Failed to update task status:', err);
@@ -418,7 +427,11 @@ export class ProjectComponent {
     } else {
       const task = event.previousContainer.data[event.previousIndex];
       const oldStatus = task.status;
+      const oldStatusId = task.status_id;
+
+      // Update task with new status
       task.status = event.container.id;
+      task.status_id = this.getStatusApiId(event.container.id);
 
       // Move in UI immediately
       transferArrayItem(
@@ -430,9 +443,10 @@ export class ProjectComponent {
 
       // Optimistically update backend
       this.apiService
-        .put(`tasks/${task.id}/status`, { status_id: Number(task.status) })
+        .put(`tasks/${task.id}/status`, { status_id: task.status_id })
         .subscribe({
           error: () => {
+            // Revert the changes on error
             transferArrayItem(
               event.container.data,
               event.previousContainer.data,
@@ -440,6 +454,7 @@ export class ProjectComponent {
               event.previousIndex
             );
             task.status = oldStatus;
+            task.status_id = oldStatusId;
             alert('Failed to update task status. Please try again.');
           },
         });
@@ -477,8 +492,11 @@ export class ProjectComponent {
         next: (res: any) => {
           // Add to local statuses array with CSS class for UI
           const statusForUI = {
-            ...defaultStatus,
+            id: res.status?.id?.toString() || defaultStatus.id,
+            name: defaultStatus.name,
             color: 'bg-gray-500', // CSS class for UI
+            isCustom: true,
+            originalId: res.status?.id || undefined,
           };
           this.statuses.push(statusForUI);
           this.saveCustomStatuses();
@@ -489,8 +507,11 @@ export class ProjectComponent {
           console.error('Failed to create default status:', err);
           // Fallback: add to local array even if API fails
           const statusForUI = {
-            ...defaultStatus,
+            id: defaultStatus.id,
+            name: defaultStatus.name,
             color: 'bg-gray-500', // CSS class for UI
+            isCustom: true,
+            originalId: undefined,
           };
           this.statuses.push(statusForUI);
           this.saveCustomStatuses();
@@ -506,7 +527,7 @@ export class ProjectComponent {
         description: this.newTaskDescription,
       };
     if (this.selectedStatusId) {
-      payload.status_id = Number(this.selectedStatusId); // Use selected status if available
+      payload.status_id = this.getStatusApiId(this.selectedStatusId); // Use helper method to get proper API ID
     }
 
     this.apiService
@@ -517,6 +538,7 @@ export class ProjectComponent {
           this.showAddTask = false;
           this.newTaskTitle = '';
           this.newTaskDescription = '';
+          this.selectedStatusId = null; // Reset selected status
           this.showSuccessToast = true;
           setTimeout(() => (this.showSuccessToast = false), 2000);
         },
@@ -777,5 +799,17 @@ export class ProjectComponent {
           );
         },
       });
+  }
+
+  private getStatusApiId(statusId: string): number {
+    const status = this.statuses.find((s) => s.id === statusId);
+    const apiId = status?.originalId || Number(statusId);
+    console.log(
+      `Getting API ID for status ${statusId}:`,
+      apiId,
+      'from status:',
+      status
+    );
+    return apiId;
   }
 }
