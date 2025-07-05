@@ -113,24 +113,6 @@ export class ProjectComponent {
     return this.statuses.length > 0;
   }
 
-  // private getDefaultStatusId(): number {
-  //   // Priority order for default status:
-  //   // 1. 'pending' if it exists
-  //   // 2. First status in the list
-  //   // 3. 'pending' as fallback
-
-  //   const pendingStatus = this.statuses.find((s) => s.id === 'pending');
-  //   if (pendingStatus) {
-  //     return 'pending';
-  //   }
-
-  //   if (this.statuses.length > 0) {
-  //     return this.statuses[0].id;
-  //   }
-
-  //   return 'pending'; // fallback
-  // }
-
   constructor(
     private route: ActivatedRoute,
     private apiService: ApiService,
@@ -148,6 +130,7 @@ export class ProjectComponent {
     this.projectForm = this.fb.group({
       name: ['', Validators.required],
       description: [''],
+      repo_url: ['', [Validators.pattern(/^https?:\/\/.+/)]],
     });
   }
   ngOnInit() {
@@ -761,8 +744,10 @@ export class ProjectComponent {
     if (this.projectForm.invalid) return;
     this.isSubmitting = true;
     const payload = this.projectForm.value;
+    console.log('Creating new project with payload:', payload);
     this.apiService.post('sadmin/projects', payload).subscribe({
       next: (res: any) => {
+        console.log('Project created successfully:', res);
         this.isSubmitting = false;
         this.closeNewProjectForm();
         this.apiService.get('sadmin/projects').subscribe({
@@ -771,7 +756,8 @@ export class ProjectComponent {
           },
         });
       },
-      error: () => {
+      error: (err) => {
+        console.error('Failed to create project:', err);
         this.isSubmitting = false;
         alert('Failed to create project.');
       },
