@@ -483,6 +483,18 @@
           class="w-full border border-neutral-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
         ></textarea>
       </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Project URL (Optional)</label>
+        <input type="url" formControlName="repo_url" placeholder="https://example.com"
+          class="w-full border border-neutral-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" [class.border-red-500]="
+                  projectForm.get('repo_url')?.invalid && projectForm.get('repo_url')?.touched
+                " />
+        <div *ngIf="
+                  projectForm.get('repo_url')?.invalid && projectForm.get('repo_url')?.touched
+                " class="text-red-500 text-xs mt-1">
+          Please enter a valid URL (starting with http:// or https://).
+        </div>
+      </div>
       <div class="flex justify-end gap-2 mt-6">
         <button
           type="button"
@@ -556,6 +568,18 @@
           formControlName="due_date"
           class="w-full border border-neutral-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
         />
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-1">Project URL (Optional)</label>
+        <input type="url" formControlName="repo_url" placeholder="https://example.com"
+          class="w-full border border-neutral-200 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500" [class.border-red-500]="
+                  editProjectForm.get('repo_url')?.invalid && editProjectForm.get('repo_url')?.touched
+                " />
+        <div *ngIf="
+                  editProjectForm.get('repo_url')?.invalid && editProjectForm.get('repo_url')?.touched
+                " class="text-red-500 text-xs mt-1">
+          Please enter a valid URL (starting with http:// or https://).
+        </div>
       </div>
       <div class="flex justify-end gap-2 mt-6">
         <button

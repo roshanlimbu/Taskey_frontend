@@ -98,11 +98,13 @@ export class DashboardPageComponent implements OnInit {
       name: ['', Validators.required],
       description: [''],
       due_date: [''],
+      repo_url: ['', [Validators.pattern(/^https?:\/\/.+/)]],
     });
     this.editProjectForm = this.fb.group({
       name: ['', Validators.required],
       description: [''],
       due_date: [''],
+      repo_url: ['', [Validators.pattern(/^https?:\/\/.+/)]],
     });
   }
 
@@ -197,6 +199,7 @@ export class DashboardPageComponent implements OnInit {
       name: project.name,
       description: project.description,
       due_date: project.due_date,
+      repo_url: project.repo_url || '',
     });
   }
 
