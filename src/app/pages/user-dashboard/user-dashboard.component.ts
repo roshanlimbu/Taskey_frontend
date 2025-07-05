@@ -60,6 +60,24 @@ export class UserDashboardComponent implements OnInit {
   notificationFilter: 'all' | 'unread' | 'read' = 'all';
   chatTaskId: number | null = null;
 
+  // Commit hash popup properties
+  showCommitHashPopup = false;
+  commitHashForm = {
+    task_id: 0,
+    project_id: 0,
+    commit_hash: '',
+  };
+  pendingTaskStatusChange: {
+    task: any;
+    event: CdkDragDrop<any[]>;
+  } | null = null;
+
+  // Commit hash viewing properties
+  showCommitHashView = false;
+  selectedTaskForCommits: any = null;
+  taskCommitHashes: any[] = [];
+  loadingCommitHashes = false;
+
   constructor(
     private router: Router,
     private apiService: ApiService,
@@ -228,30 +246,54 @@ export class UserDashboardComponent implements OnInit {
       );
     } else {
       const task = event.previousContainer.data[event.previousIndex];
-      const oldStatus = task.status;
-      task.status = event.container.id;
-      transferArrayItem(
-        event.previousContainer.data,
-        event.container.data,
-        event.previousIndex,
-        event.currentIndex
-      );
-      this.apiService
-        .put(`tasks/${task.id}/status`, { status_id: Number(task.status) })
-        .subscribe({
-          next: () => this.updateKanban(),
-          error: () => {
-            transferArrayItem(
-              event.container.data,
-              event.previousContainer.data,
-              event.currentIndex,
-              event.previousIndex
-            );
-            task.status = oldStatus;
-            alert('Failed to update task status. Please try again.');
-          },
-        });
+      const newStatusId = event.container.id;
+
+      // Check if the task is being moved to completed status
+      const targetStatus = this.statuses.find((s) => s.id === newStatusId);
+      if (
+        targetStatus &&
+        targetStatus.name.toLowerCase().includes('completed')
+      ) {
+        // Store the pending change and show commit hash popup
+        this.pendingTaskStatusChange = { task, event };
+        this.commitHashForm = {
+          task_id: task.id,
+          project_id: task.project_id,
+          commit_hash: '',
+        };
+        this.showCommitHashPopup = true;
+        return;
+      }
+
+      // Normal status change without commit hash requirement
+      this.performStatusChange(task, event);
     }
+  }
+
+  performStatusChange(task: any, event: CdkDragDrop<any[]>) {
+    const oldStatus = task.status;
+    task.status = event.container.id;
+    transferArrayItem(
+      event.previousContainer.data,
+      event.container.data,
+      event.previousIndex,
+      event.currentIndex
+    );
+    this.apiService
+      .put(`tasks/${task.id}/status`, { status_id: Number(task.status) })
+      .subscribe({
+        next: () => this.updateKanban(),
+        error: () => {
+          transferArrayItem(
+            event.container.data,
+            event.previousContainer.data,
+            event.currentIndex,
+            event.previousIndex
+          );
+          task.status = oldStatus;
+          alert('Failed to update task status. Please try again.');
+        },
+      });
   }
 
   toggleNotificationDropdown() {
@@ -272,7 +314,6 @@ export class UserDashboardComponent implements OnInit {
       },
     });
   }
-
   @HostListener('document:click', ['$event'])
   onClickOutside(event: MouseEvent) {
     if (
@@ -281,7 +322,15 @@ export class UserDashboardComponent implements OnInit {
     ) {
       this.showNotificationDropdown = false;
     }
-    this.closeAllMenus();
+
+    // Don't close menus if user is interacting with popups
+    if (
+      !this.showCommitHashPopup &&
+      !this.showCommitHashView &&
+      !this.chatTaskId
+    ) {
+      this.closeAllMenus();
+    }
   }
 
   markAsRead(notif: any) {
@@ -355,6 +404,103 @@ export class UserDashboardComponent implements OnInit {
 
   closeChat() {
     this.chatTaskId = null;
+  }
+
+  submitCommitHash() {
+    if (!this.commitHashForm.commit_hash.trim()) {
+      alert('Please enter a commit hash.');
+      return;
+    }
+
+    // First, submit the commit hash
+    this.apiService.post('commit/add', this.commitHashForm).subscribe({
+      next: (res: any) => {
+        console.log('Commit hash stored successfully:', res);
+        // Now perform the status change
+        if (this.pendingTaskStatusChange) {
+          this.performStatusChange(
+            this.pendingTaskStatusChange.task,
+            this.pendingTaskStatusChange.event
+          );
+        }
+        this.closeCommitHashPopup();
+      },
+      error: (err) => {
+        console.error('Failed to store commit hash:', err);
+        alert('Failed to store commit hash. Please try again.');
+      },
+    });
+  }
+
+  closeCommitHashPopup() {
+    this.showCommitHashPopup = false;
+    this.commitHashForm = {
+      task_id: 0,
+      project_id: 0,
+      commit_hash: '',
+    };
+    this.pendingTaskStatusChange = null;
+  }
+
+  showTaskCommitHashes(task: any) {
+    this.selectedTaskForCommits = task;
+    this.showCommitHashView = true;
+    this.loadingCommitHashes = true;
+
+    // Close the task menu
+    task.showMenu = false;
+
+    const payload = {
+      task_id: task.id,
+      project_id: task.project_id,
+    };
+    // Fetch commit hashes for this task
+    this.apiService.post(`commit/getcommithash`, payload).subscribe({
+      next: (res: any) => {
+        this.taskCommitHashes = res || [];
+        this.loadingCommitHashes = false;
+      },
+      error: (err) => {
+        console.error('Failed to fetch commit hashes:', err);
+        this.taskCommitHashes = [];
+        this.loadingCommitHashes = false;
+      },
+    });
+  }
+
+  closeCommitHashView() {
+    this.showCommitHashView = false;
+    this.selectedTaskForCommits = null;
+    this.taskCommitHashes = [];
+    this.loadingCommitHashes = false;
+  }
+
+  copyToClipboard(text: string) {
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        // Show a brief success message
+        this.notificationToastMessage = 'Commit hash copied to clipboard!';
+        this.showNotificationToast = true;
+        setTimeout(() => {
+          this.showNotificationToast = false;
+        }, 2000);
+      })
+      .catch(() => {
+        // Fallback for browsers that don't support clipboard API
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+
+        this.notificationToastMessage = 'Commit hash copied to clipboard!';
+        this.showNotificationToast = true;
+        setTimeout(() => {
+          this.showNotificationToast = false;
+        }, 2000);
+      });
   }
 
   get hasStatuses() {

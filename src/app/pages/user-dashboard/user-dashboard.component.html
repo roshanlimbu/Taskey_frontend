@@ -148,9 +148,12 @@
                                         <button (click)="toggleTaskMenu(task, $event)" class="p-1 rounded-full hover:bg-neutral-100 focus:outline-none">
                                           <span class="material-symbols-outlined">more_vert</span>
                                         </button>
-                                        <div *ngIf="task.showMenu" class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg py-2 z-20 border border-neutral-200">
+                                        <div *ngIf="task.showMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-20 border border-neutral-200">
                                           <button (click)="toggleNeedHelp(task); task.showMenu = false" class="block w-full text-left px-4 py-2 text-sm hover:bg-neutral-100">
                                             {{ task.need_help ? 'Mark as Not Needing Help' : 'Mark as Need Help' }}
+                                          </button>
+                                          <button (click)="showTaskCommitHashes(task)" class="block w-full text-left px-4 py-2 text-sm hover:bg-neutral-100">
+                                            View Commit Hashes
                                           </button>
                                         </div>
                                       </div>
@@ -184,6 +187,102 @@
         <span class="material-symbols-outlined">close</span>
       </button>
       <app-chat [taskId]="chatTaskId"></app-chat>
+    </div>
+  </div>
+</ng-template>
+<!-- Commit Hash Popup -->
+<ng-template [ngIf]="showCommitHashPopup">
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-md relative">
+      <button (click)="closeCommitHashPopup()" class="absolute top-4 right-4 text-neutral-400 hover:text-neutral-700">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+
+      <div class="mb-4">
+        <h3 class="text-lg font-semibold text-neutral-800 mb-2">Task Completion</h3>
+        <p class="text-sm text-neutral-600">Please provide the commit hash for this completed task.</p>
+      </div>
+
+      <form (ngSubmit)="submitCommitHash()" #commitForm="ngForm">
+        <div class="mb-4">
+          <label for="commitHash" class="block text-sm font-medium text-neutral-700 mb-2">
+            Commit Hash <span class="text-red-500">*</span>
+          </label>
+          <input type="text" id="commitHash" name="commitHash" [(ngModel)]="commitHashForm.commit_hash" required maxlength="40"
+            placeholder="Enter commit hash (e.g., abc123def456...)"
+            class="w-full px-3 py-2 border border-neutral-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+          <p class="text-xs text-neutral-500 mt-1">Maximum 40 characters</p>
+        </div>
+
+        <div class="flex justify-end gap-3">
+          <button type="button" (click)="closeCommitHashPopup()"
+            class="px-4 py-2 text-sm font-medium text-neutral-600 bg-neutral-100 rounded-md hover:bg-neutral-200 transition-colors">
+            Cancel
+          </button>
+          <button type="submit" [disabled]="!commitForm.form.valid || !commitHashForm.commit_hash.trim()"
+            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:bg-neutral-300 disabled:cursor-not-allowed transition-colors">
+            Submit & Complete Task
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</ng-template>
+
+<!-- View Commit Hashes Popup -->
+<ng-template [ngIf]="showCommitHashView">
+  <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl relative max-h-[80vh] overflow-y-auto">
+      <button (click)="closeCommitHashView()" class="absolute top-4 right-4 text-neutral-400 hover:text-neutral-700">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+
+      <div class="mb-4">
+        <h3 class="text-lg font-semibold text-neutral-800 mb-2">Commit Hashes</h3>
+        <p class="text-sm text-neutral-600">Task: <span class="font-medium">{{ selectedTaskForCommits?.title }}</span></p>
+        <p class="text-sm text-neutral-600">Project: <span class="font-medium">{{ getProjectName(selectedTaskForCommits?.project_id) }}</span></p>
+      </div>
+
+      <div class="space-y-3">
+        <!-- Loading State -->
+        <div *ngIf="loadingCommitHashes" class="text-center py-8">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <p class="text-sm text-neutral-500 mt-2">Loading commit hashes...</p>
+        </div>
+
+        <!-- No Commit Hashes -->
+        <div *ngIf="!loadingCommitHashes && !taskCommitHashes.length" class="text-center py-8">
+          <span class="material-symbols-outlined text-4xl text-neutral-400 mb-2">code</span>
+          <p class="text-neutral-500">No commit hashes found for this task.</p>
+        </div>
+
+        <!-- Commit Hashes List -->
+        <div *ngIf="!loadingCommitHashes && taskCommitHashes.length" class="space-y-3">
+          <div *ngFor="let commit of taskCommitHashes" class="bg-neutral-50 rounded-lg p-4 border border-neutral-200">
+            <div class="flex items-center justify-between mb-2">
+              <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-green-600">check_circle</span>
+                <span class="font-mono text-sm bg-neutral-200 px-2 py-1 rounded">{{ commit.commit_hash }}</span>
+              </div>
+              <button (click)="copyToClipboard(commit.commit_hash)"
+                class="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition-colors">
+                Copy
+              </button>
+            </div>
+            <div class="text-xs text-neutral-500">
+              <div>Added by: {{ commit.user?.name || 'Unknown' }}</div>
+              <div>Date: {{ commit.created_at | date:'short' }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex justify-end mt-6">
+        <button (click)="closeCommitHashView()"
+          class="px-4 py-2 text-sm font-medium text-neutral-600 bg-neutral-100 rounded-md hover:bg-neutral-200 transition-colors">
+          Close
+        </button>
+      </div>
     </div>
   </div>
 </ng-template>
