@@ -23,25 +23,33 @@ export class UserDashboardComponent implements OnInit {
   showProfileDropdown = false;
   dashboardData: any;
   selectedProjectId: number | null = null;
-  statuses = [
-    { id: 'pending', label: 'Pending', color: 'bg-gray-500' },
-    { id: 'ready_to_start', label: 'Ready to Start', color: 'bg-blue-400' },
-    { id: 'in_progress', label: 'In Progress', color: 'bg-yellow-500' },
-    { id: 'blocked', label: 'Blocked', color: 'bg-red-500' },
-    { id: 'in_review', label: 'In Review', color: 'bg-purple-500' },
-    { id: 'testing_qa', label: 'Testing/QA', color: 'bg-pink-500' },
-    {
-      id: 'awaiting_feedback',
-      label: 'Awaiting Feedback',
-      color: 'bg-orange-400',
-    },
-    { id: 'done', label: 'Done', color: 'bg-green-500' },
-    { id: 'cancelled', label: 'Cancelled', color: 'bg-neutral-400' },
-    {
-      id: 'deployed_released',
-      label: 'Deployed/Released',
-      color: 'bg-teal-500',
-    },
+  statuses: Array<{
+    id: string;
+    name: string;
+    color: string;
+    isCustom: boolean;
+    originalId?: number;
+  }> = [];
+
+  // Color options for converting hex to CSS classes
+  colorOptions = [
+    { name: 'Blue', class: 'bg-blue-500', hex: '#3b82f6' },
+    { name: 'Green', class: 'bg-green-500', hex: '#10b981' },
+    { name: 'Yellow', class: 'bg-yellow-500', hex: '#f59e0b' },
+    { name: 'Red', class: 'bg-red-500', hex: '#ef4444' },
+    { name: 'Purple', class: 'bg-purple-500', hex: '#8b5cf6' },
+    { name: 'Pink', class: 'bg-pink-500', hex: '#ec4899' },
+    { name: 'Orange', class: 'bg-orange-500', hex: '#f97316' },
+    { name: 'Teal', class: 'bg-teal-500', hex: '#14b8a6' },
+    { name: 'Indigo', class: 'bg-indigo-500', hex: '#6366f1' },
+    { name: 'Cyan', class: 'bg-cyan-500', hex: '#06b6d4' },
+    { name: 'Emerald', class: 'bg-emerald-500', hex: '#10b981' },
+    { name: 'Lime', class: 'bg-lime-500', hex: '#84cc16' },
+    { name: 'Amber', class: 'bg-amber-500', hex: '#f59e0b' },
+    { name: 'Rose', class: 'bg-rose-500', hex: '#f43f5e' },
+    { name: 'Violet', class: 'bg-violet-500', hex: '#8b5cf6' },
+    { name: 'Sky', class: 'bg-sky-500', hex: '#0ea5e9' },
+    { name: 'Gray', class: 'bg-gray-500', hex: '#6b7280' },
   ];
 
   kanban: { [key: string]: any[] } = {};
@@ -56,17 +64,23 @@ export class UserDashboardComponent implements OnInit {
     private router: Router,
     private apiService: ApiService,
     private notificationService: NotificationService,
-    private eRef: ElementRef,
+    private eRef: ElementRef
   ) {}
 
   ngOnInit() {
     this.user = JSON.parse(localStorage.getItem('user') || '{}');
+
+    // Load custom statuses first
+    this.loadCustomStatuses();
+
     this.apiService.get('user/dashboard').subscribe({
       next: (res: any) => {
+        console.log('Dashboard data received:', res);
         this.dashboardData = res;
         if (this.dashboardData?.projects?.length) {
           this.selectedProjectId = this.dashboardData.projects[0].id;
         }
+        console.log('Dashboard tasks:', this.dashboardData?.tasks);
         this.updateKanban();
       },
       error: (err) => {
@@ -85,22 +99,74 @@ export class UserDashboardComponent implements OnInit {
     });
   }
 
+  loadCustomStatuses() {
+    this.apiService.get('sadmin/status').subscribe({
+      next: (res: any) => {
+        this.statuses = (res.statuses || []).map((status: any) => ({
+          id: status.id.toString(), // Convert numeric ID to string for consistency
+          name: status.name,
+          color: this.convertHexToClass(status.color),
+          isCustom: true,
+          originalId: status.id, // Keep original numeric ID for backend operations
+        }));
+        console.log('Loaded statuses:', this.statuses);
+        // Update kanban after statuses are loaded
+        this.updateKanban();
+      },
+      error: (err) => {
+        console.error('Failed to load custom statuses:', err);
+        // Fallback to localStorage
+        const savedStatuses = localStorage.getItem('customStatuses');
+        if (savedStatuses) {
+          this.statuses = JSON.parse(savedStatuses);
+          this.updateKanban();
+        } else {
+          // If no saved statuses, show empty state
+          this.statuses = [];
+        }
+      },
+    });
+  }
+
+  private convertHexToClass(hexColor: string): string {
+    if (!hexColor || !hexColor.startsWith('#')) {
+      return 'bg-blue-500'; // default
+    }
+    const colorOption = this.colorOptions.find(
+      (option) => option.hex === hexColor
+    );
+    return colorOption ? colorOption.class : 'bg-blue-500';
+  }
+
   selectProject(projectId: number) {
     this.selectedProjectId = projectId;
     this.updateKanban();
   }
 
   updateKanban() {
-    if (!this.dashboardData?.tasks) return;
+    if (!this.dashboardData?.tasks || !this.statuses.length) return;
+
     const projectTasks = this.dashboardData.tasks.filter((task: any) =>
-      this.selectedProjectId ? task.project_id == this.selectedProjectId : true,
+      this.selectedProjectId ? task.project_id == this.selectedProjectId : true
     );
+
     this.kanban = {};
     for (const status of this.statuses) {
-      this.kanban[status.id] = projectTasks.filter(
-        (t: any) => t.status === status.id,
-      );
+      this.kanban[status.id] = projectTasks.filter((task: any) => {
+        // Handle both cases: task.status as string or task.status as object
+        if (typeof task.status === 'string') {
+          return task.status === status.id;
+        } else if (task.status && task.status.id) {
+          // If status is an object, check if the status ID matches
+          return task.status.id.toString() === status.id;
+        } else if (task.status_id) {
+          // If we have status_id, compare with the status ID
+          return task.status_id.toString() === status.id;
+        }
+        return false;
+      });
     }
+    console.log('Updated kanban:', this.kanban);
   }
 
   showProfile() {
@@ -116,36 +182,37 @@ export class UserDashboardComponent implements OnInit {
   getProjectName(projectId: number): string {
     if (!this.dashboardData?.projects) return 'N/A';
     const project = this.dashboardData.projects.find(
-      (p: any) => p.id === projectId,
+      (p: any) => p.id === projectId
     );
     return project ? project.name : 'N/A';
   }
 
   getTaskBgColor(statusId: string): string {
-    switch (statusId) {
-      case 'pending':
-        return 'bg-gray-50';
-      case 'ready_to_start':
-        return 'bg-blue-50';
-      case 'in_progress':
-        return 'bg-yellow-50';
-      case 'blocked':
-        return 'bg-red-50';
-      case 'in_review':
-        return 'bg-purple-50';
-      case 'testing_qa':
-        return 'bg-pink-50';
-      case 'awaiting_feedback':
-        return 'bg-orange-50';
-      case 'done':
-        return 'bg-green-50';
-      case 'cancelled':
-        return 'bg-neutral-100';
-      case 'deployed_released':
-        return 'bg-teal-50';
-      default:
-        return 'bg-neutral-50';
-    }
+    const status = this.statuses.find((s) => s.id === statusId);
+    if (!status) return 'bg-neutral-50';
+
+    // Convert the color class to a lighter background variant
+    const colorMap: { [key: string]: string } = {
+      'bg-gray-500': 'bg-gray-50',
+      'bg-blue-500': 'bg-blue-50',
+      'bg-yellow-500': 'bg-yellow-50',
+      'bg-red-500': 'bg-red-50',
+      'bg-purple-500': 'bg-purple-50',
+      'bg-pink-500': 'bg-pink-50',
+      'bg-orange-500': 'bg-orange-50',
+      'bg-green-500': 'bg-green-50',
+      'bg-teal-500': 'bg-teal-50',
+      'bg-indigo-500': 'bg-indigo-50',
+      'bg-cyan-500': 'bg-cyan-50',
+      'bg-emerald-500': 'bg-emerald-50',
+      'bg-lime-500': 'bg-lime-50',
+      'bg-amber-500': 'bg-amber-50',
+      'bg-rose-500': 'bg-rose-50',
+      'bg-violet-500': 'bg-violet-50',
+      'bg-sky-500': 'bg-sky-50',
+    };
+
+    return colorMap[status.color] || 'bg-neutral-50';
   }
 
   get connectedDropLists() {
@@ -157,7 +224,7 @@ export class UserDashboardComponent implements OnInit {
       moveItemInArray(
         event.container.data,
         event.previousIndex,
-        event.currentIndex,
+        event.currentIndex
       );
     } else {
       const task = event.previousContainer.data[event.previousIndex];
@@ -167,7 +234,7 @@ export class UserDashboardComponent implements OnInit {
         event.previousContainer.data,
         event.container.data,
         event.previousIndex,
-        event.currentIndex,
+        event.currentIndex
       );
       this.apiService
         .put(`tasks/${task.id}/status`, { status: task.status })
@@ -178,7 +245,7 @@ export class UserDashboardComponent implements OnInit {
               event.container.data,
               event.previousContainer.data,
               event.currentIndex,
-              event.previousIndex,
+              event.previousIndex
             );
             task.status = oldStatus;
             alert('Failed to update task status. Please try again.');
@@ -235,7 +302,7 @@ export class UserDashboardComponent implements OnInit {
     this.apiService.delete(`notifications/${notif.id}`).subscribe({
       next: () => {
         this.notifications = this.notifications.filter(
-          (n) => n.id !== notif.id,
+          (n) => n.id !== notif.id
         );
       },
       error: (err) => {
@@ -288,5 +355,9 @@ export class UserDashboardComponent implements OnInit {
 
   closeChat() {
     this.chatTaskId = null;
+  }
+
+  get hasStatuses() {
+    return this.statuses.length > 0;
   }
 }

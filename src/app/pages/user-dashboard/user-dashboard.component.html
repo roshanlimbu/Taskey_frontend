@@ -124,13 +124,18 @@
     <main class="flex-1">
         <div class="bg-white rounded-2xl shadow-lg border border-neutral-100 p-6 h-full">
             <div class="overflow-x-auto ">
-                <div class="flex gap-4 flex-wrap md:flex-nowrap">
+                <div *ngIf="!hasStatuses" class="text-center py-12">
+                  <div class="text-neutral-500 text-lg mb-4">
+                    No task statuses available. Please contact your project manager to set up project statuses.
+                  </div>
+                </div>
+                <div *ngIf="hasStatuses" class="flex gap-4 flex-wrap md:flex-nowrap">
                     <ng-container *ngFor="let status of statuses">
                         <div class="bg-neutral-50 rounded-lg p-4 w-full md:w-72 flex-shrink-0 min-h-[500px] overflow-y-auto flex flex-col" cdkDropList [id]="status.id"
                             [cdkDropListData]="kanban[status.id]" [cdkDropListConnectedTo]="connectedDropLists" (cdkDropListDropped)="drop($event)">
                             <div class="font-medium text-neutral-600 mb-3 flex items-center">
                                 <span class="h-2 w-2 rounded-full mr-2" [ngClass]="status.color"></span>
-                                {{ status.label }}
+                                {{ status.name }}
                             </div>
                         <div class="min-h-[50px] space-y-2 flex-1">
                             <ng-container *ngIf="kanban[status.id]?.length; else noTasks">
