@@ -237,7 +237,7 @@ export class UserDashboardComponent implements OnInit {
         event.currentIndex
       );
       this.apiService
-        .put(`tasks/${task.id}/status`, { status: task.status })
+        .put(`tasks/${task.id}/status`, { status_id: Number(task.status) })
         .subscribe({
           next: () => this.updateKanban(),
           error: () => {
