@@ -99,6 +99,7 @@ export class ProjectComponent {
     { name: 'Rose', class: 'bg-rose-500', hex: '#f43f5e' },
     { name: 'Violet', class: 'bg-violet-500', hex: '#8b5cf6' },
     { name: 'Sky', class: 'bg-sky-500', hex: '#0ea5e9' },
+    { name: 'Gray', class: 'bg-gray-500', hex: '#6b7280' },
   ];
 
   showNewProjectForm = false;
@@ -342,14 +343,14 @@ export class ProjectComponent {
 
     if (!title) return;
 
-    // Check if there are no statuses, create a default "Pending" status first
+    // Check if there are no statuses, create default "Pending" and "Completed" statuses first
     if (this.statuses.length === 0) {
-      this.createDefaultPendingStatus()
+      this.createDefaultStatuses()
         .then(() => {
           this.createTaskWithPrompt(title, description);
         })
         .catch(() => {
-          // If creating status fails, still try to create the task
+          // If creating statuses fails, still try to create the task
           this.createTaskWithPrompt(title, description);
         });
     } else {
@@ -447,14 +448,14 @@ export class ProjectComponent {
   submitAddTask() {
     if (!this.projectId || !this.newTaskTitle) return;
 
-    // Check if there are no statuses, create a default "Pending" status first
+    // Check if there are no statuses, create default "Pending" and "Completed" statuses first
     if (this.statuses.length === 0) {
-      this.createDefaultPendingStatus()
+      this.createDefaultStatuses()
         .then(() => {
           this.createTask();
         })
         .catch(() => {
-          // If creating status fails, still try to create the task
+          // If creating statuses fails, still try to create the task
           this.createTask();
         });
     } else {
@@ -462,44 +463,80 @@ export class ProjectComponent {
     }
   }
 
-  private createDefaultPendingStatus(): Promise<void> {
+  private createDefaultStatuses(): Promise<void> {
     return new Promise((resolve, reject) => {
-      const defaultStatus = {
-        id: 'pending',
-        name: 'Pending',
-        color: '#6b7280', // Gray color hex
-        isCustom: true,
-      };
+      const defaultStatuses = [
+        {
+          id: 'pending',
+          name: 'Pending',
+          color: '#6b7280', // Gray color hex
+          isCustom: true,
+        },
+        {
+          id: 'completed',
+          name: 'Completed',
+          color: '#10b981', // Green color hex
+          isCustom: true,
+        },
+      ];
 
-      this.apiService.post('sadmin/status/create', defaultStatus).subscribe({
-        next: (res: any) => {
-          // Add to local statuses array with CSS class for UI
-          const statusForUI = {
-            id: res.status?.id?.toString() || defaultStatus.id,
-            name: defaultStatus.name,
-            color: 'bg-gray-500', // CSS class for UI
-            isCustom: true,
-            originalId: res.status?.id || undefined,
-          };
-          this.statuses.push(statusForUI);
-          this.saveCustomStatuses();
-          console.log('Default Pending status created');
-          resolve();
-        },
-        error: (err) => {
-          console.error('Failed to create default status:', err);
-          // Fallback: add to local array even if API fails
-          const statusForUI = {
-            id: defaultStatus.id,
-            name: defaultStatus.name,
-            color: 'bg-gray-500', // CSS class for UI
-            isCustom: true,
-            originalId: undefined,
-          };
-          this.statuses.push(statusForUI);
-          this.saveCustomStatuses();
-          reject(err);
-        },
+      let createdCount = 0;
+      let failedCount = 0;
+
+      defaultStatuses.forEach((defaultStatus) => {
+        this.apiService.post('sadmin/status/create', defaultStatus).subscribe({
+          next: (res: any) => {
+            // Add to local statuses array with CSS class for UI
+            const statusForUI = {
+              id: res.status?.id?.toString() || defaultStatus.id,
+              name: defaultStatus.name,
+              color:
+                defaultStatus.name === 'Pending'
+                  ? 'bg-gray-500'
+                  : 'bg-green-500', // CSS class for UI
+              isCustom: true,
+              originalId: res.status?.id || undefined,
+            };
+            this.statuses.push(statusForUI);
+            createdCount++;
+
+            if (createdCount + failedCount === defaultStatuses.length) {
+              this.saveCustomStatuses();
+              console.log(
+                `Created ${createdCount} default statuses: Pending and Completed`
+              );
+              resolve();
+            }
+          },
+          error: (err) => {
+            console.error(
+              `Failed to create default status ${defaultStatus.name}:`,
+              err
+            );
+            // Fallback: add to local array even if API fails
+            const statusForUI = {
+              id: defaultStatus.id,
+              name: defaultStatus.name,
+              color:
+                defaultStatus.name === 'Pending'
+                  ? 'bg-gray-500'
+                  : 'bg-green-500', // CSS class for UI
+              isCustom: true,
+              originalId: undefined,
+            };
+            this.statuses.push(statusForUI);
+            failedCount++;
+
+            if (createdCount + failedCount === defaultStatuses.length) {
+              this.saveCustomStatuses();
+              if (createdCount > 0) {
+                resolve();
+              } else {
+                reject(err);
+              }
+            }
+          },
+        });
       });
     });
   }

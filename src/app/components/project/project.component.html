@@ -171,7 +171,7 @@
               </div>
             </div>
           </div>
-          <div class="mb-4">
+          <div *ngIf="hasStatuses" class="mb-4">
             <button (click)="openAddStatusModal()"
               class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center gap-2">
               <span class="material-symbols-outlined">add</span>
@@ -181,13 +181,8 @@
           <div class="overflow-x-auto" appAutoScroll [scrollSpeed]="10">
             <div *ngIf="!hasStatuses" class="text-center py-12">
               <div class="text-neutral-500 text-lg mb-4">
-                No statuses available. Add your first status to get started!
+                Add new Task to get started.
               </div>
-              <button (click)="openAddStatusModal()"
-                class="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors duration-200 flex items-center gap-2 mx-auto">
-                <span class="material-symbols-outlined">add</span>
-                Add Your First Status
-              </button>
             </div>
             <div *ngIf="hasStatuses" class="flex gap-4">
               <ng-container *ngFor="let status of statuses" appAutoScroll>
