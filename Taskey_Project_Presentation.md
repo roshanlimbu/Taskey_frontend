@@ -416,10 +416,10 @@ class TaskController extends Controller
 ### Time Investment
 
 - **Planning & Design:** 2 weeks
-- **Backend Development:** 6 weeks
-- **Frontend Development:** 5 weeks
-- **Testing & Debugging:** 3 weeks
-- **Documentation:** 1 week
+- **Backend Development:** 3 weeks
+- **Frontend Development:** 3 weeks
+- **Testing & Debugging:** 2 weeks
+- **Documentation:** 2 week
 
 ### Technology Learning Curve
 
