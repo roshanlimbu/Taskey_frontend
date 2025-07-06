@@ -610,13 +610,14 @@ class TaskController extends Controller
 
 ## Slide 24: Q&A Session
 
+<!--
 ### Common Questions Prepared
 
 ❓ **How does the AI report generation work?**
 ❓ **What happens when external APIs are down?**
 ❓ **How do you ensure data security across companies?**
 ❓ **What are the system requirements for deployment?**
-❓ **How does the offline functionality work?**
+-->
 
 ### Technical Deep Dive Available
 
