@@ -199,7 +199,6 @@ Users ──→ Companies (Many-to-One)
 
 - **One-click Report Creation**
 - **PDF Export**
-- **Intelligent Analysis**
 
 ---
 
@@ -632,64 +631,21 @@ class TaskController extends Controller
 
 ### Contact Information
 
-📧 **Email:** [your.email@example.com]
-🔗 **LinkedIn:** [Your LinkedIn Profile]
-💻 **GitHub:** [Your GitHub Profile]
-🌐 **Portfolio:** [Your Portfolio Website]
+📧 **Email:** [birenlimbu415@gmail.com]
+💻 **GitHub:** [https://github.com/roshanlimbu]
 
 ### Project Repository
 
-📁 **Backend:** [GitHub Repository URL]
-📁 **Frontend:** [GitHub Repository URL]
-📋 **Documentation:** [Project Documentation Link]
+📁 **Backend:** [https://github.com/roshanlimbu/Taskey_backend]
+📁 **Frontend:** [https://github.com/roshanlimbu/Taskey_frontend]
+📋 **Documentation:** [https://docs.google.com/document/d/1ySRKYNDN-by2M7UnnPaFgOPzIDmvvd4GpooB6RuAmw4/edit?usp=sharing]
 
 ### Acknowledgments
 
 Special thanks to:
 
-- Project Guide: [Guide Name]
-- Institution: [College Name]
+- Project Guide: [Chandra Prasad Acharya, Saroj Ojha, Chhatraman Shrestha]
+- Institution: [Ithahari Namuna College]
 - Open Source Community
-- Technology Partners
 
 ---
-
-## Presentation Notes
-
-### Slide Timing Recommendations
-
-- **Title & Agenda:** 2 minutes
-- **Problem & Solution:** 5 minutes
-- **Architecture & Tech Stack:** 5 minutes
-- **Features & Demo:** 8 minutes
-- **Implementation:** 7 minutes
-- **Testing & Results:** 3 minutes
-- **Challenges & Future:** 5 minutes
-- **Conclusion & Q&A:** 5 minutes
-
-**Total Duration:** 40 minutes (including Q&A)
-
-### Visual Elements to Add
-
-- **Screenshots** of actual application
-- **Architecture diagrams** (draw.io)
-- **Database ER diagrams**
-- **Code snippets** with syntax highlighting
-- **Performance charts** and metrics
-- **User interface mockups**
-
-### Presentation Tips
-
-1. **Start with a hook** - Show the working application
-2. **Use visuals** - Screenshots and diagrams
-3. **Tell a story** - Problem → Solution → Results
-4. **Be confident** - You built this amazing system
-5. **Prepare for questions** - Know your code inside out
-
-### Equipment Needed
-
-- Laptop with presentation software
-- Internet connection for live demo
-- Backup slides in PDF format
-- USB drive with presentation files
-- Remote clicker (if available)
