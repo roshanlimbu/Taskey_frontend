@@ -119,20 +119,33 @@ export class MockSocketService {
     
     const room = this.rooms.get(roomId);
     if (room) {
-      room.participants.push({ id: userId, name: userName });
-      this.userRooms.set(userId, roomId);
-      
-      console.log(`Mock Socket: User ${userName} joined room ${roomId}`);
-      
-      // Notify existing participants
-      room.participants.forEach((participant: any) => {
-        if (participant.id !== userId) {
-          this.eventSubjects['user-joined'].next({
-            userId: userId,
-            userName: userName
-          });
-        }
-      });
+      // Check if user is already in the room
+      const existingParticipant = room.participants.find(
+        (p: any) => p.id === userId
+      );
+      if (!existingParticipant) {
+        room.participants.push({ id: userId, name: userName });
+        this.userRooms.set(userId, roomId);
+
+        console.log(
+          `Mock Socket: User ${userName} joined room ${roomId}. Total participants: ${room.participants.length}`
+        );
+
+        // Notify ALL participants (including the one who just joined) about the new participant
+        room.participants.forEach((participant: any) => {
+          setTimeout(() => {
+            this.eventSubjects['user-joined'].next({
+              userId: userId,
+              userName: userName,
+              roomParticipants: room.participants,
+            });
+          }, 100);
+        });
+      } else {
+        console.log(`Mock Socket: User ${userName} already in room ${roomId}`);
+      }
+    } else {
+      console.error(`Mock Socket: Room ${roomId} not found`);
     }
   }
 
