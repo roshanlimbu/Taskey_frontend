@@ -2,23 +2,24 @@ import { Injectable } from '@angular/core';
 import { Subject, BehaviorSubject } from 'rxjs';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class MockSocketService {
   private rooms: Map<string, any> = new Map();
   private userRooms: Map<string, string> = new Map();
-  
+  private lastEndCallTime = 0; // Throttle end-call events
+
   // Simulate socket events
   private eventSubjects = {
     connect: new Subject<void>(),
     disconnect: new Subject<void>(),
     'user-joined': new Subject<any>(),
     'user-left': new Subject<any>(),
-    'offer': new Subject<any>(),
-    'answer': new Subject<any>(),
+    offer: new Subject<any>(),
+    answer: new Subject<any>(),
     'ice-candidate': new Subject<any>(),
     'incoming-call': new Subject<any>(),
-    'call-ended': new Subject<any>()
+    'call-ended': new Subject<any>(),
   };
 
   private connected = new BehaviorSubject<boolean>(false);
@@ -55,13 +56,21 @@ export class MockSocketService {
 
   on(event: string, callback: (data?: any) => void) {
     if (this.eventSubjects[event as keyof typeof this.eventSubjects]) {
-      this.eventSubjects[event as keyof typeof this.eventSubjects].subscribe(callback);
+      this.eventSubjects[event as keyof typeof this.eventSubjects].subscribe(
+        callback
+      );
     }
   }
 
   emit(event: string, data?: any) {
-    console.log(`Mock Socket: Emitting ${event}`, data);
-    
+    // Reduce console spam for frequently called events
+    const quietEvents = ['end-call'];
+    if (!quietEvents.includes(event)) {
+      console.log(`Mock Socket: Emitting ${event}`, data);
+    } else {
+      console.log(`Mock Socket: Emitting ${event}`);
+    }
+
     switch (event) {
       case 'create-room':
         this.handleCreateRoom(data);
@@ -84,7 +93,9 @@ export class MockSocketService {
       default:
         // Just emit the event for listeners
         if (this.eventSubjects[event as keyof typeof this.eventSubjects]) {
-          this.eventSubjects[event as keyof typeof this.eventSubjects].next(data);
+          this.eventSubjects[event as keyof typeof this.eventSubjects].next(
+            data
+          );
         }
         break;
     }
@@ -92,21 +103,21 @@ export class MockSocketService {
 
   private handleCreateRoom(data: any) {
     const { roomId, taskId, userName, userId } = data;
-    
+
     const room = {
       id: roomId,
       taskId,
       createdBy: userName,
       participants: [{ id: userId, name: userName }],
       isActive: true,
-      createdAt: new Date()
+      createdAt: new Date(),
     };
-    
+
     this.rooms.set(roomId, room);
     this.userRooms.set(userId, roomId);
-    
+
     console.log(`Mock Socket: Room ${roomId} created by ${userName}`);
-    
+
     // Simulate notifying other users about the new call
     // In a real implementation, this would notify all project members
     setTimeout(() => {
@@ -116,7 +127,7 @@ export class MockSocketService {
 
   private handleJoinRoom(data: any) {
     const { roomId, userName, userId } = data;
-    
+
     const room = this.rooms.get(roomId);
     if (room) {
       // Check if user is already in the room
@@ -152,12 +163,12 @@ export class MockSocketService {
   private handleOffer(data: any) {
     const { to, offer } = data;
     console.log(`Mock Socket: Relaying offer to ${to}`);
-    
+
     // In a real implementation, this would send to the specific user
     setTimeout(() => {
       this.eventSubjects['offer'].next({
         from: this.auth.userId,
-        offer: offer
+        offer: offer,
       });
     }, 100);
   }
@@ -165,11 +176,11 @@ export class MockSocketService {
   private handleAnswer(data: any) {
     const { to, answer } = data;
     console.log(`Mock Socket: Relaying answer to ${to}`);
-    
+
     setTimeout(() => {
       this.eventSubjects['answer'].next({
         from: this.auth.userId,
-        answer: answer
+        answer: answer,
       });
     }, 100);
   }
@@ -177,32 +188,43 @@ export class MockSocketService {
   private handleIceCandidate(data: any) {
     const { to, candidate } = data;
     console.log(`Mock Socket: Relaying ICE candidate to ${to}`);
-    
+
     setTimeout(() => {
       this.eventSubjects['ice-candidate'].next({
         from: this.auth.userId,
-        candidate: candidate
+        candidate: candidate,
       });
     }, 50);
   }
 
   private handleEndCall() {
+    const now = Date.now();
+    // Throttle end-call events to prevent spam (minimum 1 second between calls)
+    if (now - this.lastEndCallTime < 1000) {
+      console.log('Mock Socket: Throttling end-call event');
+      return;
+    }
+    this.lastEndCallTime = now;
+
     const roomId = this.userRooms.get(this.auth.userId || '');
     if (roomId) {
       const room = this.rooms.get(roomId);
-      if (room) {
+      if (room && room.isActive) {
+        console.log(`Mock Socket: Ending call for room ${roomId}`);
         room.isActive = false;
-        
-        // Notify all participants
+
+        // Notify all participants ONCE
         room.participants.forEach((participant: any) => {
           this.eventSubjects['call-ended'].next({});
         });
-        
+
         // Clean up
         room.participants.forEach((participant: any) => {
           this.userRooms.delete(participant.id);
         });
         this.rooms.delete(roomId);
+      } else {
+        console.log('Mock Socket: Room already ended or not found');
       }
     }
   }
@@ -211,7 +233,7 @@ export class MockSocketService {
     // Simulate another user receiving an incoming call notification
     // In a real app, this would be sent to all project members
     console.log('Mock Socket: Simulating incoming call for other users');
-    
+
     // You can uncomment this to test incoming call UI
     // setTimeout(() => {
     //   this.eventSubjects['incoming-call'].next(room);

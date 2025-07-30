@@ -21,7 +21,7 @@ export interface CallParticipant {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class VideoChatService {
   private socket!: MockSocketService;
@@ -29,14 +29,19 @@ export class VideoChatService {
   private peerConnections: Map<string, RTCPeerConnection> = new Map();
   private remoteStreams: Map<string, MediaStream> = new Map();
   private currentUserId?: string;
+  private isEndingCall = false; // Flag to prevent recursive end call
 
   // Observables for UI updates
   private isConnectedSubject = new BehaviorSubject<boolean>(false);
   private participantsSubject = new BehaviorSubject<CallParticipant[]>([]);
   private localStreamSubject = new BehaviorSubject<MediaStream | null>(null);
-  private remoteStreamsSubject = new BehaviorSubject<Map<string, MediaStream>>(new Map());
+  private remoteStreamsSubject = new BehaviorSubject<Map<string, MediaStream>>(
+    new Map()
+  );
   private incomingCallSubject = new BehaviorSubject<VideoCall | null>(null);
-  private callStateSubject = new BehaviorSubject<'idle' | 'calling' | 'in-call' | 'connecting'>('idle');
+  private callStateSubject = new BehaviorSubject<
+    'idle' | 'calling' | 'in-call' | 'connecting'
+  >('idle');
 
   public isConnected$ = this.isConnectedSubject.asObservable();
   public participants$ = this.participantsSubject.asObservable();
@@ -48,8 +53,8 @@ export class VideoChatService {
   private configuration: RTCConfiguration = {
     iceServers: [
       { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' }
-    ]
+      { urls: 'stun:stun1.l.google.com:19302' },
+    ],
   };
 
   constructor() {
@@ -95,20 +100,29 @@ export class VideoChatService {
       this.handleUserLeft(data.userId);
     });
 
-    this.socket.on('offer', (data: { from: string, offer: RTCSessionDescriptionInit }) => {
-      console.log('Received offer from:', data.from);
-      this.handleOffer(data.from, data.offer);
-    });
+    this.socket.on(
+      'offer',
+      (data: { from: string; offer: RTCSessionDescriptionInit }) => {
+        console.log('Received offer from:', data.from);
+        this.handleOffer(data.from, data.offer);
+      }
+    );
 
-    this.socket.on('answer', (data: { from: string, answer: RTCSessionDescriptionInit }) => {
-      console.log('Received answer from:', data.from);
-      this.handleAnswer(data.from, data.answer);
-    });
+    this.socket.on(
+      'answer',
+      (data: { from: string; answer: RTCSessionDescriptionInit }) => {
+        console.log('Received answer from:', data.from);
+        this.handleAnswer(data.from, data.answer);
+      }
+    );
 
-    this.socket.on('ice-candidate', (data: { from: string, candidate: RTCIceCandidateInit }) => {
-      console.log('Received ICE candidate from:', data.from);
-      this.handleIceCandidate(data.from, data.candidate);
-    });
+    this.socket.on(
+      'ice-candidate',
+      (data: { from: string; candidate: RTCIceCandidateInit }) => {
+        console.log('Received ICE candidate from:', data.from);
+        this.handleIceCandidate(data.from, data.candidate);
+      }
+    );
 
     this.socket.on('incoming-call', (callData: VideoCall) => {
       console.log('Incoming call:', callData);
@@ -117,7 +131,15 @@ export class VideoChatService {
 
     this.socket.on('call-ended', () => {
       console.log('Call ended by host');
-      this.endCall();
+      if (!this.isEndingCall) {
+        this.isEndingCall = true;
+        this.cleanup();
+        this.callStateSubject.next('idle');
+        // Reset the flag after a short delay
+        setTimeout(() => {
+          this.isEndingCall = false;
+        }, 100);
+      }
     });
   }
 
@@ -149,10 +171,10 @@ export class VideoChatService {
       'userName:',
       userName
     );
-    
+
     const roomId = uuidv4();
     console.log('Generated roomId:', roomId);
-    
+
     try {
       // Request media permissions with user-friendly prompts
       console.log('Requesting camera and microphone permissions...');
@@ -218,45 +240,55 @@ export class VideoChatService {
         video: {
           width: { ideal: 1280 },
           height: { ideal: 720 },
-          facingMode: 'user'
+          facingMode: 'user',
         },
         audio: {
           echoCancellation: true,
-          noiseSuppression: true
-        }
+          noiseSuppression: true,
+        },
       });
     } catch (error: any) {
       console.warn('Failed to get video and audio, trying audio only:', error);
-      
+
       try {
         // If video fails, try audio only
         return await navigator.mediaDevices.getUserMedia({
           video: false,
           audio: {
             echoCancellation: true,
-            noiseSuppression: true
-          }
+            noiseSuppression: true,
+          },
         });
       } catch (audioError: any) {
         console.warn('Failed to get audio, creating empty stream:', audioError);
-        
+
         // Last resort: create an empty media stream
-        throw new Error('Unable to access camera or microphone. Please check your permissions.');
+        throw new Error(
+          'Unable to access camera or microphone. Please check your permissions.'
+        );
       }
     }
   }
 
   private handleMediaError(error: any): Error {
     if (error.name === 'NotAllowedError') {
-      return new Error('Camera and microphone access denied. Please allow permissions and try again.');
+      return new Error(
+        'Camera and microphone access denied. Please allow permissions and try again.'
+      );
     } else if (error.name === 'NotFoundError') {
-      return new Error('No camera or microphone found. Please check your devices.');
+      return new Error(
+        'No camera or microphone found. Please check your devices.'
+      );
     } else if (error.name === 'NotReadableError') {
-      return new Error('Camera or microphone is already in use by another application.');
+      return new Error(
+        'Camera or microphone is already in use by another application.'
+      );
     } else if (error.name === 'OverconstrainedError') {
       return new Error('Camera or microphone constraints not supported.');
     } else {
-      return new Error(`Media error: ${error.message || 'Unknown error occurred'}`);
+      return new Error(
+        `Media error: ${error.message || 'Unknown error occurred'}`
+      );
     }
   }
 
@@ -268,7 +300,7 @@ export class VideoChatService {
 
     // Add local stream to peer connection
     if (this.localStream) {
-      this.localStream.getTracks().forEach(track => {
+      this.localStream.getTracks().forEach((track) => {
         peerConnection.addTrack(track, this.localStream!);
       });
     }
@@ -285,7 +317,7 @@ export class VideoChatService {
       if (event.candidate) {
         this.socket.emit('ice-candidate', {
           to: userId,
-          candidate: event.candidate
+          candidate: event.candidate,
         });
       }
     };
@@ -294,10 +326,10 @@ export class VideoChatService {
     try {
       const offer = await peerConnection.createOffer();
       await peerConnection.setLocalDescription(offer);
-      
+
       this.socket.emit('offer', {
         to: userId,
-        offer: offer
+        offer: offer,
       });
     } catch (error) {
       console.error('Failed to create offer:', error);
@@ -321,14 +353,14 @@ export class VideoChatService {
 
   private async handleOffer(from: string, offer: RTCSessionDescriptionInit) {
     let peerConnection = this.peerConnections.get(from);
-    
+
     if (!peerConnection) {
       peerConnection = new RTCPeerConnection(this.configuration);
       this.peerConnections.set(from, peerConnection);
 
       // Add local stream to peer connection
       if (this.localStream) {
-        this.localStream.getTracks().forEach(track => {
+        this.localStream.getTracks().forEach((track) => {
           peerConnection!.addTrack(track, this.localStream!);
         });
       }
@@ -345,7 +377,7 @@ export class VideoChatService {
         if (event.candidate) {
           this.socket.emit('ice-candidate', {
             to: from,
-            candidate: event.candidate
+            candidate: event.candidate,
           });
         }
       };
@@ -355,10 +387,10 @@ export class VideoChatService {
       await peerConnection.setRemoteDescription(offer);
       const answer = await peerConnection.createAnswer();
       await peerConnection.setLocalDescription(answer);
-      
+
       this.socket.emit('answer', {
         to: from,
-        answer: answer
+        answer: answer,
       });
     } catch (error) {
       console.error('Failed to handle offer:', error);
@@ -376,7 +408,10 @@ export class VideoChatService {
     }
   }
 
-  private async handleIceCandidate(from: string, candidate: RTCIceCandidateInit) {
+  private async handleIceCandidate(
+    from: string,
+    candidate: RTCIceCandidateInit
+  ) {
     const peerConnection = this.peerConnections.get(from);
     if (peerConnection) {
       try {
@@ -389,12 +424,12 @@ export class VideoChatService {
 
   private updateParticipants() {
     const participants: CallParticipant[] = [];
-    
+
     // Add self
     participants.push({
       id: this.currentUserId || 'me',
       name: 'You',
-      isHost: true
+      isHost: true,
     });
 
     // Add remote participants
@@ -403,7 +438,7 @@ export class VideoChatService {
         id: userId,
         name: `User ${userId}`,
         isHost: false,
-        stream
+        stream,
       });
     });
 
@@ -413,14 +448,14 @@ export class VideoChatService {
 
   private updateParticipantsFromRoom(roomParticipants: any[]) {
     const participants: CallParticipant[] = [];
-    
-    roomParticipants.forEach(participant => {
+
+    roomParticipants.forEach((participant) => {
       const isCurrentUser = participant.id === this.currentUserId;
       participants.push({
         id: participant.id,
         name: isCurrentUser ? 'You' : participant.name,
         isHost: isCurrentUser,
-        stream: this.remoteStreams.get(participant.id)
+        stream: this.remoteStreams.get(participant.id),
       });
     });
 
@@ -429,24 +464,35 @@ export class VideoChatService {
   }
 
   endCall() {
+    if (this.isEndingCall) {
+      return; // Prevent recursive calls
+    }
+
+    this.isEndingCall = true;
+
     // Notify server
     this.socket.emit('end-call');
-    
+
     // Clean up local resources
     this.cleanup();
     this.callStateSubject.next('idle');
+
+    // Reset the flag after a short delay
+    setTimeout(() => {
+      this.isEndingCall = false;
+    }, 100);
   }
 
   private cleanup() {
     // Stop local stream
     if (this.localStream) {
-      this.localStream.getTracks().forEach(track => track.stop());
+      this.localStream.getTracks().forEach((track) => track.stop());
       this.localStream = undefined;
       this.localStreamSubject.next(null);
     }
 
     // Close all peer connections
-    this.peerConnections.forEach(pc => pc.close());
+    this.peerConnections.forEach((pc) => pc.close());
     this.peerConnections.clear();
 
     // Clear remote streams
