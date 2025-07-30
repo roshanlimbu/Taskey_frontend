@@ -18,6 +18,8 @@ import {
 import { AutoScrollDirective } from '../../directives/auto-scroll.directive';
 import { DragStateService } from '../../services/drag-state.service';
 import { OpenAiService } from '../../services/open-ai.service';
+import { HelpButtonComponent } from '../help-button/help-button.component';
+import { VideoChatComponent } from '../video-chat/video-chat.component';
 
 interface User {
   id: number;
@@ -34,6 +36,8 @@ interface User {
     FormsModule,
     ReactiveFormsModule,
     AutoScrollDirective,
+    HelpButtonComponent,
+    VideoChatComponent,
   ],
   templateUrl: './project.component.html',
   styleUrl: './project.component.scss',
@@ -106,6 +110,11 @@ export class ProjectComponent {
   isSubmitting = false;
   projectForm: FormGroup;
 
+  // Video chat properties
+  showVideoChat = false;
+  videoChatTaskId?: number;
+  currentUserName = '';
+
   get connectedDropLists() {
     return this.statuses.map((s) => s.id);
   }
@@ -135,6 +144,10 @@ export class ProjectComponent {
     });
   }
   ngOnInit() {
+    // Initialize current user name
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    this.currentUserName = user.name || 'User';
+
     this.loadCustomStatuses();
     this.apiService.get('sadmin/users').subscribe({
       next: (res: any) => {
@@ -834,5 +847,42 @@ export class ProjectComponent {
       status
     );
     return apiId;
+  }
+
+  // Video chat methods
+  onHelpStatusChange(taskId: number, needsHelp: boolean) {
+    const task = this.tasks.find(t => t.id === taskId);
+    if (task) {
+      const updated = { need_help: needsHelp };
+      this.apiService.put(`tasks/${taskId}/need-help`, updated).subscribe({
+        next: (res: any) => {
+          task.need_help = res.task.need_help;
+          this.updateKanban();
+        },
+        error: (err) => {
+          alert('Failed to update need help flag.');
+        },
+      });
+    }
+  }
+
+  onVideoCallStart(taskId: number) {
+    this.videoChatTaskId = taskId;
+    this.showVideoChat = true;
+  }
+
+  onVideoCallJoin() {
+    this.showVideoChat = true;
+  }
+
+  onChatOpen(taskId: number) {
+    // Implement chat opening logic here
+    // This can integrate with your existing chat component
+    console.log('Opening chat for task:', taskId);
+  }
+
+  onVideoChatClose() {
+    this.showVideoChat = false;
+    this.videoChatTaskId = undefined;
   }
 }

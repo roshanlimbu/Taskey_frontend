@@ -215,6 +215,13 @@
                       <div *ngIf="task.assigned_to" class="text-xs text-purple-700 mt-1">
                         Assigned to: {{ task.assigned_to }}
                       </div>
+                      <!-- Help Button -->
+                      <div class="mt-2 flex justify-between items-center">
+                        <app-help-button [needsHelp]="task.need_help" [taskId]="task.id" (helpStatusChange)="onHelpStatusChange(task.id, $event)"
+                          (videoCallStart)="onVideoCallStart(task.id)" (videoCallJoin)="onVideoCallJoin()" (chatOpen)="onChatOpen(task.id)">
+                        </app-help-button>
+                      </div>
+
                       <div class="flex items-center gap-2 mt-2">
                         <span *ngIf="task.assignee" class="text-xs text-neutral-500">
                           {{ task.assignee?.name }}
@@ -417,3 +424,6 @@
     </div>
   </div>
 </div>
+<!-- Video Chat Component -->
+<app-video-chat [isVisible]="showVideoChat" [taskId]="videoChatTaskId" [userName]="currentUserName" (close)="onVideoChatClose()">
+</app-video-chat>
