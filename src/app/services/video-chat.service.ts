@@ -73,10 +73,22 @@ export class VideoChatService {
       this.isConnectedSubject.next(false);
     });
 
-    this.socket.on('user-joined', (data: { userId: string, userName: string }) => {
-      console.log('User joined:', data);
-      this.handleUserJoined(data.userId, data.userName);
-    });
+    this.socket.on(
+      'user-joined',
+      (data: {
+        userId: string;
+        userName: string;
+        roomParticipants?: any[];
+      }) => {
+        console.log('User joined:', data);
+        this.handleUserJoined(data.userId, data.userName);
+
+        // Update participants list if provided
+        if (data.roomParticipants) {
+          this.updateParticipantsFromRoom(data.roomParticipants);
+        }
+      }
+    );
 
     this.socket.on('user-left', (data: { userId: string }) => {
       console.log('User left:', data);
@@ -110,10 +122,14 @@ export class VideoChatService {
   }
 
   connect(userId: string) {
+    console.log('VideoChatService.connect called with userId:', userId);
     this.currentUserId = userId;
     if (!this.socket.connected_value) {
       this.socket.auth = { userId };
+      console.log('Connecting socket with auth:', { userId });
       this.socket.connect();
+    } else {
+      console.log('Socket already connected');
     }
   }
 
@@ -125,42 +141,58 @@ export class VideoChatService {
   }
 
   async createVideoCall(taskId: number, userName: string): Promise<string> {
+    console.log(
+      'VideoChatService.createVideoCall called with taskId:',
+      taskId,
+      'type:',
+      typeof taskId,
+      'userName:',
+      userName
+    );
+    
     const roomId = uuidv4();
+    console.log('Generated roomId:', roomId);
     
     try {
-      // Get user media first
-      this.localStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      });
-      
+      // Request media permissions with user-friendly prompts
+      console.log('Requesting camera and microphone permissions...');
+
+      this.localStream = await this.requestUserMedia();
+
       this.localStreamSubject.next(this.localStream);
       this.callStateSubject.next('calling');
 
       // Create room on server
+      console.log('Emitting create-room with data:', {
+        roomId,
+        taskId,
+        userName,
+        userId: this.currentUserId,
+      });
+
       this.socket.emit('create-room', {
         roomId,
         taskId,
         userName,
-        userId: this.currentUserId
+        userId: this.currentUserId,
       });
 
+      console.log('VideoChatService.createVideoCall returning roomId:', roomId);
       return roomId;
     } catch (error) {
       console.error('Failed to create video call:', error);
       this.callStateSubject.next('idle');
-      throw error;
+      throw this.handleMediaError(error);
     }
   }
 
   async joinVideoCall(roomId: string, userName: string): Promise<void> {
     try {
-      // Get user media first
-      this.localStream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true
-      });
-      
+      // Request media permissions
+      console.log('Requesting camera and microphone permissions...');
+
+      this.localStream = await this.requestUserMedia();
+
       this.localStreamSubject.next(this.localStream);
       this.callStateSubject.next('connecting');
 
@@ -168,14 +200,63 @@ export class VideoChatService {
       this.socket.emit('join-room', {
         roomId,
         userName,
-        userId: this.currentUserId
+        userId: this.currentUserId,
       });
 
       this.callStateSubject.next('in-call');
     } catch (error) {
       console.error('Failed to join video call:', error);
       this.callStateSubject.next('idle');
-      throw error;
+      throw this.handleMediaError(error);
+    }
+  }
+
+  private async requestUserMedia(): Promise<MediaStream> {
+    try {
+      // First, try to get both video and audio
+      return await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+          facingMode: 'user'
+        },
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true
+        }
+      });
+    } catch (error: any) {
+      console.warn('Failed to get video and audio, trying audio only:', error);
+      
+      try {
+        // If video fails, try audio only
+        return await navigator.mediaDevices.getUserMedia({
+          video: false,
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true
+          }
+        });
+      } catch (audioError: any) {
+        console.warn('Failed to get audio, creating empty stream:', audioError);
+        
+        // Last resort: create an empty media stream
+        throw new Error('Unable to access camera or microphone. Please check your permissions.');
+      }
+    }
+  }
+
+  private handleMediaError(error: any): Error {
+    if (error.name === 'NotAllowedError') {
+      return new Error('Camera and microphone access denied. Please allow permissions and try again.');
+    } else if (error.name === 'NotFoundError') {
+      return new Error('No camera or microphone found. Please check your devices.');
+    } else if (error.name === 'NotReadableError') {
+      return new Error('Camera or microphone is already in use by another application.');
+    } else if (error.name === 'OverconstrainedError') {
+      return new Error('Camera or microphone constraints not supported.');
+    } else {
+      return new Error(`Media error: ${error.message || 'Unknown error occurred'}`);
     }
   }
 
@@ -327,6 +408,24 @@ export class VideoChatService {
     });
 
     this.participantsSubject.next(participants);
+    console.log('Updated participants:', participants);
+  }
+
+  private updateParticipantsFromRoom(roomParticipants: any[]) {
+    const participants: CallParticipant[] = [];
+    
+    roomParticipants.forEach(participant => {
+      const isCurrentUser = participant.id === this.currentUserId;
+      participants.push({
+        id: participant.id,
+        name: isCurrentUser ? 'You' : participant.name,
+        isHost: isCurrentUser,
+        stream: this.remoteStreams.get(participant.id)
+      });
+    });
+
+    this.participantsSubject.next(participants);
+    console.log('Updated participants from room data:', participants);
   }
 
   endCall() {
