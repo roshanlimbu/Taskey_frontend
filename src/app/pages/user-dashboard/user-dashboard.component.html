@@ -144,29 +144,16 @@
                                     <div class="flex items-center justify-between">
                                       <div class="font-medium text-neutral-800">{{ task.title }}</div>
                                       <span *ngIf="task.need_help" class="ml-2 px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-700 font-semibold">NEED HELP</span>
-                                      <div class="relative">
-                                        <button (click)="toggleTaskMenu(task, $event)" class="p-1 rounded-full hover:bg-neutral-100 focus:outline-none">
-                                          <span class="material-symbols-outlined">more_vert</span>
-                                        </button>
-                                        <div *ngIf="task.showMenu" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-20 border border-neutral-200">
-                                          <button (click)="toggleNeedHelp(task); task.showMenu = false" class="block w-full text-left px-4 py-2 text-sm hover:bg-neutral-100">
-                                            {{ task.need_help ? 'Mark as Not Needing Help' : 'Mark as Need Help' }}
-                                          </button>
-                                          <button (click)="showTaskCommitHashes(task)" class="block w-full text-left px-4 py-2 text-sm hover:bg-neutral-100">
-                                            View Commit Hashes
-                                          </button>
-                                        </div>
-                                      </div>
                                       </div>
                                     <div class="text-neutral-500 text-sm">{{ task.description }}</div>
                                     <div class="text-xs text-neutral-500 mt-1">Due: {{ task.due_date || 'N/A' }}</div>
                                     <div class="text-xs text-neutral-500">Project: {{ getProjectName(task.project_id) }}</div>
-                                    <ng-container *ngIf="task.need_help">
-                                      <button (click)="openChat(task.id)"
-                                        class="mt-2 text-xs px-2 py-1 rounded border border-blue-400 text-blue-700 bg-blue-50 hover:bg-blue-100 transition">
-                                        Join Help Chat
-                                      </button>
-                                    </ng-container>
+                                    <!-- Help Button -->
+                                    <div class="mt-2">
+                                      <app-help-button [needsHelp]="task.need_help" [taskId]="task.id" (helpStatusChange)="onHelpStatusChange(task.id, $event)"
+                                        (videoCallStart)="onVideoCallStart(task.id)" (videoCallJoin)="onVideoCallJoin()" (chatOpen)="openChat(task.id)">
+                                      </app-help-button>
+                                    </div>
                                 </div>
                             </ng-container>
                             <ng-template #noTasks>
@@ -286,4 +273,7 @@
     </div>
   </div>
 </ng-template>
+<!-- Video Chat Component -->
+<app-video-chat [isVisible]="showVideoChat" [taskId]="videoChatTaskId" [userName]="currentUserName" (close)="onVideoChatClose()">
+</app-video-chat>
 </div>

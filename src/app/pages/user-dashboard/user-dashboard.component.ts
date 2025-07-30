@@ -11,10 +11,12 @@ import {
 } from '@angular/cdk/drag-drop';
 import { NotificationService } from '../../services/notification.service';
 import { ChatComponent } from '../../components/chat/chat.component';
+import { HelpButtonComponent } from '../../components/help-button/help-button.component';
+import { VideoChatComponent } from '../../components/video-chat/video-chat.component';
 
 @Component({
   selector: 'app-user-dashboard',
-  imports: [CommonModule, FormsModule, DragDropModule, ChatComponent],
+  imports: [CommonModule, FormsModule, DragDropModule, ChatComponent, HelpButtonComponent, VideoChatComponent],
   templateUrl: './user-dashboard.component.html',
   styleUrl: './user-dashboard.component.scss',
 })
@@ -78,6 +80,11 @@ export class UserDashboardComponent implements OnInit {
   taskCommitHashes: any[] = [];
   loadingCommitHashes = false;
 
+  // Video chat properties
+  showVideoChat = false;
+  videoChatTaskId?: number;
+  currentUserName = '';
+
   constructor(
     private router: Router,
     private apiService: ApiService,
@@ -87,6 +94,7 @@ export class UserDashboardComponent implements OnInit {
 
   ngOnInit() {
     this.user = JSON.parse(localStorage.getItem('user') || '{}');
+    this.currentUserName = this.user.name || 'User';
 
     // Load custom statuses first
     this.loadCustomStatuses();
@@ -505,5 +513,39 @@ export class UserDashboardComponent implements OnInit {
 
   get hasStatuses() {
     return this.statuses.length > 0;
+  }
+
+  // Video chat methods
+  onHelpStatusChange(taskId: number, needsHelp: boolean) {
+    const updated = { need_help: needsHelp };
+    this.apiService.put(`tasks/${taskId}/need-help`, updated).subscribe({
+      next: (res: any) => {
+        // Update the task in the dashboard data
+        if (this.dashboardData && this.dashboardData.tasks) {
+          const task = this.dashboardData.tasks.find((t: any) => t.id === taskId);
+          if (task) {
+            task.need_help = res.task.need_help;
+            this.updateKanban();
+          }
+        }
+      },
+      error: (err) => {
+        alert('Failed to update need help flag.');
+      },
+    });
+  }
+
+  onVideoCallStart(taskId: number) {
+    this.videoChatTaskId = taskId;
+    this.showVideoChat = true;
+  }
+
+  onVideoCallJoin() {
+    this.showVideoChat = true;
+  }
+
+  onVideoChatClose() {
+    this.showVideoChat = false;
+    this.videoChatTaskId = undefined;
   }
 }
