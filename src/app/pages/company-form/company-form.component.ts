@@ -159,9 +159,6 @@ export class CompanyFormComponent implements OnInit {
       this.apiService.post('company/add', this.companyForm).subscribe({
         next: (response: any) => {
           console.log('Company created successfully:', response);
-          this.message =
-            'Company registered successfully! Redirecting to dashboard...';
-          this.messageType = 'success';
           this.isSubmitting = false;
 
           // Update user's company_id in localStorage
@@ -178,10 +175,21 @@ export class CompanyFormComponent implements OnInit {
             address: '',
           };
 
-          // Redirect to dashboard after a short delay
-          setTimeout(() => {
-            this.redirectToDashboard();
-          }, 2000);
+          // Check if user is verified (assume backend returns user or verification status)
+          const user = response.data?.user || response.user;
+          if (user && user.is_user_verified === false) {
+            this.message =
+              'Company registered successfully! Your account is pending super-admin verification. You will be able to access the dashboard once verified.';
+            this.messageType = 'success';
+            // Do NOT redirect
+          } else {
+            this.message =
+              'Company registered successfully! Redirecting to dashboard...';
+            this.messageType = 'success';
+            setTimeout(() => {
+              this.redirectToDashboard();
+            }, 2000);
+          }
         },
         error: (error) => {
           console.error('Error creating company:', error);

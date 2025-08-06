@@ -1,7 +1,43 @@
+<!-- Company Owners Verification Section -->
+<div class="company-owners-section" *ngIf="companyOwners && companyOwners.length">
+  <h2 class="text-2xl font-bold mb-4 mt-8">Company Owners Pending Verification</h2>
+  <div class="flex flex-wrap gap-6 justify-start">
+    <div *ngFor="let user of companyOwners"
+      class="relative bg-white rounded-2xl border border-neutral-300 flex flex-col items-center justify-between p-6 min-w-[220px] max-w-[260px] shadow-sm transition hover:shadow-lg hover:border-primary-300 cursor-pointer"
+      style="box-sizing: border-box;" (click)="navigateToCompanyDetails(user.company_id)">
+      <img [src]="user.profile_image || 'https://images.unsplash.com/photo-1511367461989-f85a21fda167?...'" alt="User profile"
+        class="w-16 h-16 rounded-full border-2 border-neutral-200 mb-3 object-cover bg-neutral-100" />
+      <div class="w-full text-center">
+        <div class="font-bold text-lg text-neutral-900 truncate">{{ user.name }}</div>
+        <div class="text-sm text-neutral-500 mb-1">{{ getRoleDisplayName(user.role) }}</div>
+        <div class="text-xs mt-1 mb-2">
+          <span [ngClass]="user.is_user_verified ? 'text-green-600' : 'text-red-500'">
+            {{ user.is_user_verified ? 'Verified' : 'Not Verified' }}
+          </span>
+        </div>
+        <div class="text-xs text-neutral-400 mb-2">{{ user.email }}</div>
+      </div>
+      <div class="absolute right-4 top-4 text-xs text-neutral-400">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" />
+        </svg>
+      </div>
+    </div>
+  </div>
+  <div class="mt-4 text-sm text-neutral-600">
+    <span class="inline-flex items-center">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" class="mr-2">
+        <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" />
+        <path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="2" />
+      </svg>
+      Click on a company owner to view company details and verify their account
+    </span>
+  </div>
+</div>
 <div class="dashboard-container">
     <!-- Header -->
     <div class="dashboard-header">
-        <h1 class="dashboard-title">Dashboard</h1>
+        <h1 class="dashboard-title">Taskey</h1>
     </div>
 
     <!-- Loading State -->

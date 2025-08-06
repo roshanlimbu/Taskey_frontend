@@ -64,6 +64,36 @@
         </div>
     </div>
 
+    <!-- Company Owner Verification Section -->
+    <div *ngIf="companyOwner" class="company-owner-section">
+        <div class="owner-verification-card">
+            <h3>Company Owner</h3>
+            <div class="owner-details">
+                <div class="owner-avatar">
+                    <span>{{ companyOwner.name.charAt(0).toUpperCase() }}</span>
+                </div>
+                <div class="owner-info">
+                    <div class="owner-name">{{ companyOwner.name }}</div>
+                    <div class="owner-email">{{ companyOwner.email }}</div>
+                    <div class="owner-status">
+                        <span [ngClass]="companyOwner.is_user_verified ? 'status-verified' : 'status-unverified'">
+                            {{ companyOwner.is_user_verified ? 'Verified' : 'Not Verified' }}
+                        </span>
+                    </div>
+                </div>
+                <div class="owner-actions">
+                    <button class="verification-toggle-btn" [ngClass]="companyOwner.is_user_verified ? 'btn-unverify' : 'btn-verify'"
+                        [disabled]="loadingOwnerVerification" (click)="toggleOwnerVerification()">
+                        <span *ngIf="loadingOwnerVerification" class="loading-spinner-sm"></span>
+                        <span *ngIf="!loadingOwnerVerification">
+                            {{ companyOwner.is_user_verified ? 'Unverify Owner' : 'Verify Owner' }}
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Stats Cards -->
     <div class="stats-grid">
         <!-- User Stats -->

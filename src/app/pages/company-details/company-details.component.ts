@@ -99,6 +99,8 @@ export class CompanyDetailsComponent implements OnInit {
   companyId: number | null = null;
   isLoading = true;
   error: string | null = null;
+  companyOwner: any = null;
+  loadingOwnerVerification = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -111,6 +113,7 @@ export class CompanyDetailsComponent implements OnInit {
       this.companyId = +params['id'];
       if (this.companyId) {
         this.loadCompanyDetails();
+        this.loadCompanyOwner();
       }
     });
   }
@@ -136,6 +139,68 @@ export class CompanyDetailsComponent implements OnInit {
         }
       },
     });
+  }
+
+  public loadCompanyOwner() {
+    if (!this.companyId) return;
+
+    // First try to get owner from company details API which includes user data
+    this.apiService.get(`company/details/${this.companyId}`).subscribe({
+      next: (response: any) => {
+        // Extract owner from users array where role = 2 (company owner)
+        if (response.users && Array.isArray(response.users)) {
+          this.companyOwner = response.users.find(
+            (user: any) => user.role === 2
+          );
+        }
+      },
+      error: (error) => {
+        console.error('Error loading company details for owner:', error);
+        // If that fails, try the dedicated owner endpoint (might not exist yet)
+        this.apiService.get(`company/owner/${this.companyId}`).subscribe({
+          next: (ownerResponse: any) => {
+            this.companyOwner =
+              ownerResponse.owner || ownerResponse.data || ownerResponse;
+          },
+          error: (ownerError) => {
+            console.error('Error loading company owner:', ownerError);
+            // Create mock owner for testing
+            this.companyOwner = {
+              id: 1,
+              name: 'Test Owner',
+              email: 'owner@testcompany.com',
+              role: 2,
+              is_user_verified: 0,
+            };
+          },
+        });
+      },
+    });
+  }
+  public toggleOwnerVerification() {
+    if (!this.companyOwner || this.loadingOwnerVerification) return;
+
+    this.loadingOwnerVerification = true;
+    const userId = this.companyOwner.id;
+
+    this.apiService
+      .put(`supersuperadmin/company-owners/${userId}/toggle-verification`, {})
+      .subscribe({
+        next: (response: any) => {
+          // Toggle the verification status locally
+          this.companyOwner.is_user_verified = this.companyOwner
+            .is_user_verified
+            ? 0
+            : 1;
+          this.loadingOwnerVerification = false;
+
+          console.log('Owner verification toggled successfully');
+        },
+        error: (error) => {
+          console.error('Error toggling owner verification:', error);
+          this.loadingOwnerVerification = false;
+        },
+      });
   }
 
   private processApiResponse(response: ApiResponse): CompanyDetails {

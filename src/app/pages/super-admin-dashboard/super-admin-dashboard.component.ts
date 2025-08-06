@@ -71,11 +71,14 @@ interface DashboardData {
 export class SuperAdminDashboardComponent implements OnInit {
   dashboardData: DashboardData | null = null;
   isLoading = true;
+  companyOwners: any[] = [];
+  loadingCompanyOwners = false;
 
   constructor(private apiService: ApiService, private router: Router) {}
 
   ngOnInit() {
     this.loadDashboardData();
+    this.fetchCompanyOwners();
   }
 
   private loadDashboardData() {
@@ -90,6 +93,37 @@ export class SuperAdminDashboardComponent implements OnInit {
         this.isLoading = false;
       },
     });
+  }
+
+  fetchCompanyOwners() {
+    this.loadingCompanyOwners = true;
+    this.apiService.get('supersuperadmin/company-owners-pending').subscribe({
+      next: (res: any) => {
+        this.companyOwners = Array.isArray(res.users) ? res.users : [];
+        this.loadingCompanyOwners = false;
+      },
+      error: (err) => {
+        this.companyOwners = [];
+        this.loadingCompanyOwners = false;
+        console.error('Error fetching company owners:', err);
+      },
+    });
+  }
+
+  toggleUserVerification(user: any) {
+    const newStatus = !user.is_user_verified;
+    this.apiService
+      .put(`supersuperadmin/users/${user.id}/verify`, {
+        is_user_verified: newStatus,
+      })
+      .subscribe({
+        next: (res: any) => {
+          user.is_user_verified = newStatus;
+        },
+        error: (err) => {
+          console.error('Error updating verification:', err);
+        },
+      });
   }
 
   navigateToCompanyDetails(companyId: any) {
