@@ -623,13 +623,15 @@
     >
       &times;
     </button>
-    <div *ngIf="!allUsers || allUsers.length === 0" class="text-neutral-500">
+    <div *ngIf="loadingAllUsers" class="text-neutral-500">Loading members...</div>
+    <div *ngIf="!loadingAllUsers && (!allUsers || allUsers.length === 0)" class="text-neutral-500">
       No members found.
     </div>
-    <div class="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+    <div class="flex flex-wrap gap-6 justify-start">
       <div
         *ngFor="let user of allUsers || []"
-        class="bg-white p-4 rounded-lg shadow border flex items-center gap-4"
+        class="relative bg-white rounded-2xl border border-neutral-300 flex flex-col items-center justify-between p-6 min-w-[220px] max-w-[260px] shadow-sm transition hover:shadow-lg hover:border-primary-300"
+        style="box-sizing: border-box;"
       >
         <img
           [src]="
@@ -637,12 +639,22 @@
             'https://images.unsplash.com/photo-1511367461989-f85a21fda167?...'
           "
           alt="User profile"
-          class="w-12 h-12 rounded-full border"
+          class="w-16 h-16 rounded-full border-2 border-neutral-200 mb-3 object-cover bg-neutral-100"
         />
-        <div>
-          <div class="font-semibold">{{ user?.name }}</div>
-          <div class="text-sm text-neutral-500">{{ user?.dev_role }}</div>
+        <div class="w-full text-center">
+          <div class="font-bold text-lg text-neutral-900 truncate">{{ user?.name }}</div>
+          <div class="text-sm text-neutral-500 mb-1">{{ user?.dev_role || 'user' }}</div>
+          <div class="text-xs mt-1 mb-2">
+            <span [ngClass]="user.is_user_verified ? 'text-green-600' : 'text-red-500'">
+              {{ user.is_user_verified ? 'Verified' : 'Not Verified' }}
+            </span>
+          </div>
         </div>
+        <button class="absolute right-4 top-4 px-4 py-1 rounded-lg text-xs font-semibold border transition-colors duration-200 shadow-sm"
+          [ngClass]="user.is_user_verified ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' : 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'"
+          (click)="toggleUserVerification(user)">
+          {{ user.is_user_verified ? 'Unverify' : 'Verify' }}
+        </button>
       </div>
     </div>
   </div>

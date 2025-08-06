@@ -57,6 +57,7 @@ export class DashboardPageComponent implements OnInit {
   user: any;
   allVerifiedUsers: any[] = [];
   allUsers: any[] = [];
+  loadingAllUsers = false;
 
   showProfileDropdown = false;
 
@@ -87,7 +88,7 @@ export class DashboardPageComponent implements OnInit {
     private authService: AuthService,
     private fb: FormBuilder,
     private apiService: ApiService,
-    public activitiesService: ActivitiesService,
+    public activitiesService: ActivitiesService
   ) {
     this.repoForm = this.fb.group({
       name: ['', Validators.required],
@@ -214,7 +215,7 @@ export class DashboardPageComponent implements OnInit {
     this.apiService
       .put(
         `sadmin/projects/${this.editingProjectId}`,
-        this.editProjectForm.value,
+        this.editProjectForm.value
       )
       .subscribe({
         next: (res: any) => {
@@ -254,6 +255,41 @@ export class DashboardPageComponent implements OnInit {
 
   openAllMembersModal() {
     this.showAllMembersModal = true;
+    this.fetchAllCompanyUsers();
+  }
+
+  fetchAllCompanyUsers() {
+    this.loadingAllUsers = true;
+    this.apiService.get('sadmin/companyUsers').subscribe({
+      next: (res: any) => {
+        this.allUsers = Array.isArray(res.users) ? res.users : [];
+        this.loadingAllUsers = false;
+      },
+      error: (err) => {
+        this.allUsers = [];
+        this.loadingAllUsers = false;
+        this.showToastMessage('Error fetching company users', 'error');
+        console.error('Error fetching company users:', err);
+      },
+    });
+  }
+  toggleUserVerification(user: any) {
+    const newStatus = !user.is_user_verified;
+    this.apiService
+      .put(`sadmin/users/${user.id}/verify`, { is_user_verified: newStatus })
+      .subscribe({
+        next: (res: any) => {
+          user.is_user_verified = newStatus;
+          this.showToastMessage(
+            `User ${newStatus ? 'verified' : 'unverified'} successfully!`,
+            'success'
+          );
+        },
+        error: (err: any) => {
+          this.showToastMessage('Error updating verification', 'error');
+          console.error('Error updating verification:', err);
+        },
+      });
   }
 
   closeAllMembersModal() {
@@ -291,7 +327,7 @@ export class DashboardPageComponent implements OnInit {
     if (!this.projects || !this.projects.length) return 0;
     const total = this.projects.reduce(
       (sum, p) => sum + (p.progress_percentage || 0),
-      0,
+      0
     );
     return Math.round(total / this.projects.length);
   }
@@ -299,7 +335,7 @@ export class DashboardPageComponent implements OnInit {
     if (!this.projects) return 0;
     return this.projects.reduce(
       (sum, project) => sum + (project.completed_tasks || 0),
-      0,
+      0
     );
   }
 
@@ -335,7 +371,7 @@ export class DashboardPageComponent implements OnInit {
     this.apiService.delete(`notifications/${notif.id}`).subscribe({
       next: () => {
         this.notifications = this.notifications.filter(
-          (n) => n.id !== notif.id,
+          (n) => n.id !== notif.id
         );
       },
       error: (err) => {
