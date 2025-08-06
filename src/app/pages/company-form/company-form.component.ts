@@ -68,13 +68,13 @@ export class CompanyFormComponent implements OnInit {
           this.router.navigate(['/super/dashboard']);
           break;
         case 1:
-          this.router.navigate(['/dashboard']);
+          this.router.navigate(['/dashboard']); // Company Owner dashboard
           break;
         case 2:
-          this.router.navigate(['/admin/dashboard']);
+          this.router.navigate(['/admin/dashboard']); // Project Lead dashboard
           break;
         case 3:
-          this.router.navigate(['/user/dashboard']);
+          this.router.navigate(['/user/dashboard']); // User dashboard
           break;
         default:
           this.router.navigate(['/login']);

@@ -147,10 +147,10 @@ export class CompanyDetailsComponent implements OnInit {
     // First try to get owner from company details API which includes user data
     this.apiService.get(`company/details/${this.companyId}`).subscribe({
       next: (response: any) => {
-        // Extract owner from users array where role = 2 (company owner)
+        // Extract owner from users array where role = 1 (company owner)
         if (response.users && Array.isArray(response.users)) {
           this.companyOwner = response.users.find(
-            (user: any) => user.role === 2
+            (user: any) => user.role === 1
           );
         }
       },
@@ -169,7 +169,7 @@ export class CompanyDetailsComponent implements OnInit {
               id: 1,
               name: 'Test Owner',
               email: 'owner@testcompany.com',
-              role: 2,
+              role: 1,
               is_user_verified: 0,
             };
           },
@@ -404,7 +404,7 @@ export class CompanyDetailsComponent implements OnInit {
   getRoleDisplayName(role: number): string {
     const roleMap: { [key: number]: string } = {
       0: 'Master Admin',
-      1: 'Company Lead',
+      1: 'Company Owner',
       2: 'Project Lead',
       3: 'User',
     };
